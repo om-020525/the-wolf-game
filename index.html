@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Wolf Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#10100f;--panel:#1a1917;--line:#37332c;--beige:#e4d9c6;--sand:#b9ab93;--muted:#8a8070;--ink:#3b3329;--good:#8fe0a4;--info:#8bbcf5;--bad:#f59a9a;--void:#10100f;--lit:#e4d9c6;--flash:#3a352c;--veil:rgba(10,10,9,.92);--pile1:#bdb29d;--pile2:#8d836f;--scout:#e6c229;--cw:100px}
+:root[data-theme=sharp]{--bg:#000;--panel:#000;--line:#6e6e6e;--beige:#fff;--sand:#e6e6e6;--muted:#a8a8a8;--ink:#000;--good:#00e676;--info:#0a84ff;--bad:#ff1744;--flash:#2b2b2b;--veil:rgba(0,0,0,.94);--void:#000;--lit:#fff;--pile1:#c8c8c8;--pile2:#808080;--scout:#ffe600}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--beige);font:14px/1.4 Montserrat,system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+body.selectable{user-select:text;-webkit-user-select:text}
+h1,h2,.label,figcaption,.count,button b,#over h2,#over b{font-family:Orbitron,Montserrat,sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:14px 24px;border-bottom:1px solid var(--line)}
+h1{flex:1;margin:0;font-size:20px;letter-spacing:.18em;font-weight:700}
+button{font:inherit;cursor:pointer;color:var(--beige);background:transparent;border:1px solid var(--sand);padding:8px 14px;text-align:left}
+button:hover:not(:disabled){background:var(--beige);color:var(--bg)}
+button:disabled{opacity:.3;cursor:not-allowed}
+main{display:grid;grid-template-columns:1fr 280px;gap:20px;padding:20px 24px}
+.board{display:flex;flex-direction:column;gap:20px;min-width:0}
+.row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.zone{background:var(--panel);border:2px solid var(--line);padding:9px 11px;min-height:calc(var(--cw)*1.4 + 56px)}
+.zone h2{margin:0 0 10px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
+.zone.active{border:2px dashed var(--scout)}
+.zone.active h2{color:var(--beige)}
+.zone.flash{animation:flash .7s}
+@keyframes flash{from{background:var(--flash)}to{background:var(--panel)}}
+.cards{display:flex;flex-wrap:wrap;gap:14px}
+.cards em{color:var(--muted);font-size:12px}
+.stack{margin:0;position:relative;width:var(--cw)}
+.card{width:var(--cw);aspect-ratio:5/7;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 4px;border-radius:6px}
+.card .art{width:100%;flex:1;min-height:0}
+.face{background:var(--beige);color:var(--ink)}
+.face .label{font-size:calc(var(--cw)*.1);letter-spacing:.12em;font-weight:700;padding-bottom:4px;text-align:center}
+.face.inverse{background:var(--void);color:var(--lit);border:1px solid var(--lit)}
+.back{background:var(--void);color:var(--lit);border:1px solid var(--lit);outline:1px solid var(--void);outline-offset:-5px;justify-content:center}
+.back .art{flex:0 1 80%}
+.multi .card{box-shadow:4px 4px 0 -1px var(--pile1),4px 4px 0 0 var(--void),8px 8px 0 -1px var(--pile2),8px 8px 0 0 var(--void)}
+.count{position:absolute;top:-8px;right:-8px;background:var(--bg);border:1px solid var(--sand);color:var(--beige);font-size:10px;padding:2px 6px;border-radius:10px}
+figcaption{margin-top:8px;font-size:9px;letter-spacing:.12em;color:var(--sand);text-align:center}
+.controls{background:var(--panel);border:1px solid var(--line);padding:14px}
+.controls h2{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0 0 12px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
+.controls h2 #scoutName{white-space:nowrap}
+.controls h2 #alphaBlind{justify-self:center;color:var(--beige);white-space:nowrap;text-align:center}
+.controls h2 #alphaBlind.hot{color:var(--bad)}
+.controls h2 button{justify-self:end;font:14px/1.4 Montserrat,system-ui,sans-serif;letter-spacing:normal;text-align:center}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
+.choices>*{min-height:84px}
+.choices button{display:flex;flex-direction:column;justify-content:flex-start}
+.choices button.blue{--ring:var(--info)}
+.choices button.green{--ring:var(--good)}
+.choices button.red{--ring:var(--bad)}
+.choices button.blue{border-color:var(--ring);box-shadow:inset 0 0 0 1px var(--ring)}
+.choices button.blue.red{--ring:var(--info)}
+.choices button{position:relative}
+.choices button.red::after,.choices button.green::after{content:"";position:absolute;inset:4px;border:2px dashed var(--bad);pointer-events:none}
+.choices button.green::after{border-color:var(--good)}
+.choices button:focus-visible{outline:1px dashed var(--ring,var(--beige));outline-offset:3px}
+.choices.solo{display:flex;justify-content:center}
+.choices button.cure{min-width:320px;padding:28px 48px;text-align:center;color:var(--good);border-color:var(--good)}
+.choices button.cure b{margin:0;font-size:18px;letter-spacing:.14em}
+.choices button.cure span{display:none}
+.choices button.cure:hover:not(:disabled){background:var(--good);color:var(--bg)}
+.choices button[aria-pressed=true]{background:var(--beige);color:var(--bg)}
+.redacted{display:flex;align-items:center;border:1px solid var(--line)}
+.redacted span{width:100%;padding:7px 0;background:var(--beige);color:var(--void);font:700 10px Orbitron,Montserrat,sans-serif;letter-spacing:.3em;text-align:center}
+.stack.use{outline:2px solid var(--info);outline-offset:6px;cursor:pointer;box-shadow:0 0 10px 2px color-mix(in srgb,var(--info) 45%,transparent)}
+.stack.use:hover,.stack.use:focus-visible{outline-width:3px;box-shadow:0 0 14px 4px color-mix(in srgb,var(--info) 70%,transparent)}
+.stack.dim{opacity:.35}
+.stack.quick{cursor:pointer}
+.stack.quick:hover{filter:brightness(1.15)}
+.stack.grab{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.stack.lifted{opacity:.35}
+.zone.use{outline:2px solid var(--info);outline-offset:-2px;box-shadow:0 0 10px 2px color-mix(in srgb,var(--info) 45%,transparent)}
+.card.ghost{position:fixed;left:0;top:0;z-index:30;pointer-events:none;opacity:.92;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+body.dragging,body.dragging *{cursor:grabbing!important}
+.choices button:disabled{opacity:.45}
+.choices button b{display:block;font-size:11px;letter-spacing:.1em;margin-bottom:4px}
+.choices button span{display:block;font-size:11px;opacity:.75;white-space:pre-line}
+.choices button i{display:block;margin-top:6px;font:normal 600 11px Orbitron,Montserrat,sans-serif;letter-spacing:.06em;color:var(--beige)}
+.choices button:hover:not(:disabled) i,.choices button[aria-pressed=true] i{color:var(--bg)}
+.menu{position:relative;display:flex;gap:8px}
+button.icon{display:grid;place-items:center;width:38px;height:38px;padding:0}
+button.icon.close{color:var(--bad);font:700 28px/1 Montserrat,sans-serif}
+button.icon[aria-expanded=true]{background:var(--beige);color:var(--bg)}
+#settings{position:absolute;right:0;top:calc(100% + 8px);z-index:5;min-width:210px;background:var(--panel);border:1px solid var(--sand);padding:14px 16px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+#settings[hidden]{display:none}
+#settings h2{margin:0 0 12px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
+button.item{width:100%;margin-bottom:14px;border-color:var(--line);letter-spacing:.08em}
+.level{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+#settings .level h2{margin:0}
+#levels{display:flex;gap:6px}
+#levels button{padding:4px 12px;text-align:center;border-color:var(--line);letter-spacing:.08em}
+#levels button.on{background:var(--beige);border-color:var(--beige);color:var(--bg)}
+.modal{position:fixed;inset:0;z-index:10;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:24px}
+.modal[hidden]{display:none}
+.modal .panel{max-height:100%;overflow:auto;background:var(--panel);border:1px solid var(--sand);padding:20px 24px}
+.modal .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal h2{margin:0;font-size:12px;letter-spacing:.2em;color:var(--muted);font-weight:500}
+#guide{padding:0;background:var(--bg)}
+#guide .panel{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"bar bar" "groups box" "list box";gap:0 24px;width:100%;height:100%;padding:20px 24px;border:0;overflow:hidden}
+#guide .bar{grid-area:bar}
+#guideTools,#guideLevels{display:flex;gap:8px}
+#guideLevels button{font:600 14px Orbitron,Montserrat,sans-serif}
+.icon[hidden]{display:none}
+#guideGroups,#guideNav{display:flex;flex-direction:column;gap:2px}
+#guideGroups{grid-area:groups;gap:6px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+#guideGroups button{padding:6px 10px;border-color:var(--line);letter-spacing:.08em}
+#guideNav{grid-area:list;min-height:0;overflow-y:auto}
+#guideNav button{padding:4px 10px;font-size:13px;border-color:transparent;color:var(--sand)}
+#guide button[aria-current=true]{border-color:var(--info);background:color-mix(in srgb,var(--info) 20%,transparent);color:var(--beige)}
+#guideBox{grid-area:box;min-height:0;overflow-y:auto;padding:24px 28px;background:var(--panel);border:1px solid var(--sand)}
+#guideBox h3{margin:0 0 20px;font:700 16px Orbitron,Montserrat,sans-serif;letter-spacing:.14em}
+#guideBox .body{display:flex;flex-wrap:wrap;align-items:flex-start;gap:28px}
+#guideBox p{flex:1 1 260px;max-width:560px;margin:0;color:var(--sand);font-size:15px;white-space:pre-line}
+#guideBox .label{min-height:2.6em;display:grid;place-items:center}
+.gallery{--cw:150px;display:grid;grid-template-columns:repeat(auto-fill,var(--cw));gap:20px;width:100%}
+.portrait{--cw:220px}
+@media(max-width:700px){#guide .panel{grid-template-columns:1fr;grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"bar" "groups" "list" "box";gap:12px}#guide .bar{margin-bottom:0}#guideGroups,#guideNav{flex-direction:row;flex-wrap:wrap}#guideGroups{margin:0;padding:0;border:0}#guideNav{max-height:34vh}#guideBox{padding:16px}.gallery{--cw:110px;gap:14px}.portrait{--cw:160px}}
+.toggles{display:flex;flex-direction:column;gap:12px}
+.toggles label{display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--sand);letter-spacing:.04em}
+.toggles label:hover{color:var(--beige)}
+.toggles input{appearance:none;-webkit-appearance:none;position:relative;flex:none;width:18px;height:18px;margin:0;border:1px solid var(--bad);background:transparent;cursor:pointer;transition:border-color .15s}
+.toggles input::after{content:"";position:absolute;inset:3px;background:var(--good);transform:scale(0);transition:transform .15s}
+.toggles input::before{content:"";position:absolute;inset:2px;background:linear-gradient(45deg,transparent 44%,var(--bad) 44% 56%,transparent 56%),linear-gradient(-45deg,transparent 44%,var(--bad) 44% 56%,transparent 56%);transform:scale(0);transition:transform .15s}
+.toggles input:not(:checked)::before{transform:scale(1)}
+.toggles input:checked{border-color:var(--good)}
+.toggles input:checked::after{transform:scale(1)}
+.toggles input[type=radio],.toggles input[type=radio]::after{border-radius:50%}
+.toggles input[type=radio]::before{content:none}
+.toggles input[type=radio]:not(:checked){border-color:var(--sand)}
+.toggles input:focus-visible{outline:1px solid var(--beige);outline-offset:3px}
+.toggles+.toggles{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.toggles:empty{display:none}
+#settings .toggles+h2{margin-top:14px}
+aside h2{margin:0 0 10px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
+aside ul{list-style:none;margin:0;padding:0;font-size:12px;color:var(--sand)}
+aside li{padding:6px 0;border-bottom:1px solid var(--line)}
+aside li:first-child{color:var(--beige)}
+#log{max-height:calc(100vh - 160px);overflow-y:auto}
+#over .panel{display:flex;flex-direction:column;align-items:center;gap:16px;padding:0;background:none;border:0;overflow:visible;text-align:center}
+#over .close{position:fixed;top:72px;right:16px}
+#over #overScore{position:fixed;top:72px;left:16px;text-align:left}
+#over b{display:block;font-size:32px;color:var(--beige)}
+#over small{letter-spacing:.2em;color:var(--sand)}
+#over #overStats{display:block;margin-top:8px;font-size:11px;letter-spacing:.1em;white-space:pre-line}
+#over #overStats:empty{display:none}
+#over h2{margin:0;font-size:40px;letter-spacing:.25em}
+#over p{margin:0;color:var(--sand)}
+#over.won h2{color:var(--good)}
+#over.lost h2{color:var(--bad)}
+main:has(aside[hidden]){grid-template-columns:1fr}
+@media(max-width:900px){main{grid-template-columns:1fr}.row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.controls h2{letter-spacing:.06em;gap:4px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<g id="wolfEar">
+ <path d="M107.6 91.6L68.6 71.8L78.2 123.7"/>
+</g>
+<g id="wolfEye">
+ <path d="M120 175.6L189.6 205.1"/>
+ <path d="M129.1 185.3C129.1 212 147.8 223.8 169.2 222.8Q185.3 221.1 191.7 207.8"/>
+ <path d="M147.8 187.4A12.9 12.9 0 0 0 172.4 197.6"/>
+ <circle cx="160.1" cy="194.9" r="2.7" fill="currentColor" stroke="none"/>
+</g>
+<g id="wolfCheek">
+ <path d="M73.9 212L102.3 229.7L115.7 259.2"/>
+</g>
+<g id="wolfMuzzleHalf">
+ <path d="M136 245.2L155.8 366.3H200.3"/>
+</g>
+<g id="wolfMuzzle">
+ <use href="#wolfMuzzleHalf"/>
+ <use href="#wolfMuzzleHalf" transform="matrix(-1 0 0 1 400.5 0)"/>
+ <path d="M200.3 246.9V337.9"/>
+ <path d="M179.9 366.3V337.9H220.1V366.3"/>
+</g>
+<g id="wolfHalf">
+ <path d="M200.3 55.7Q158.5 55.7 123.7 72.8L35.4 32.7L64.8 147.8L51.4 244.2L147.8 308.4"/>
+ <use href="#wolfEar"/>
+ <use href="#wolfEye"/>
+ <use href="#wolfCheek"/>
+</g>
+<g id="villHalf">
+ <path d="M123.6 96.5L128.2 53Q131.2 34.1 150.2 34.1H168.6"/>
+ <path d="M160.9 36.1L168.6 48.4"/>
+ <path d="M123.6 80.1H168.6"/>
+ <path d="M123.6 90.3H168.6"/>
+ <path d="M131.7 123.1Q117.9 123.1 119 136.3L131.7 146.6"/>
+ <path d="M132.3 119V174.2C132.3 196.2 147.6 213 168.6 213"/>
+ <path d="M143.5 126.1L166 137.9"/>
+ <path d="M148.1 143H155.8"/>
+ <path d="M160.9 146.6V161.9Q160.9 169.1 168.6 169.1"/>
+ <path d="M158.3 184.4H168.6"/>
+ <path d="M162.9 199.7H168.6"/>
+ <path d="M122 220.2L143.5 214.1L168.6 248.8L146.6 272.9Z"/>
+</g>
+<g id="forkHalf">
+ <path d="M242.2 140.9V198.7Q242.2 237.1 290.8 237.1"/>
+ <path d="M266.7 140.9V233.5"/>
+</g>
+<symbol id="wolf" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#wolfHalf"/>
+<use href="#wolfHalf" transform="matrix(-1 0 0 1 400.5 0)"/>
+<use href="#wolfMuzzle"/>
+<path d="M153.1 103.9L168.7 90.5L184.7 103.9L200.3 90.5L215.8 103.9L231.9 90.5L247.4 103.9"/>
+<path d="M166.5 138.2L200.3 151.5L234 138.2"/>
+<path d="M152.1 161.2L200.3 175.6L248.5 161.2"/>
+</g></symbol>
+<symbol id="unknown" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M110 150L140 85L200 55L260 85L290 150L270 205L240 235L228 262V285H172V250L190 215L225 185L232 150L220 120L200 110L180 120L168 150Z"/>
+<path d="M140 85L180 120M200 55V110M260 85L220 120M290 150L232 150M270 205L225 185M240 235L190 215M228 262L172 250M110 150L180 120M140 85L168 150"/>
+<path d="M200 315L232 340L200 365L168 340Z"/>
+<path d="M168 340H232M200 315V365"/>
+</g></symbol>
+<symbol id="villager" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#villHalf"/>
+<use href="#villHalf" transform="matrix(-1 0 0 1 337.1 0)"/>
+<ellipse cx="168.6" cy="107.7" rx="96.1" ry="12.3"/>
+<path d="M168.6 248.8V364.9"/>
+<circle cx="181.8" cy="279.5" r="2.6" fill="currentColor" stroke="none"/>
+<circle cx="181.8" cy="321.4" r="2.6" fill="currentColor" stroke="none"/>
+<path d="M122 220.2L83.7 228.4Q69.9 233.5 66.8 262.6L59.7 364.9"/>
+<path d="M62.7 316.3H93.4"/>
+<path d="M99 290.8L87.3 364.9"/>
+<path d="M215.1 220.2L257.5 228.4Q268.3 232.5 269.3 260.1"/>
+<path d="M269.3 364.9V260.1H311.2V364.9"/>
+<path d="M269.3 316.3H311.2"/>
+<path d="M239.6 290.8L252.4 364.9"/>
+<path d="M59.7 364.9H311.2"/>
+<use href="#forkHalf"/>
+<use href="#forkHalf" transform="matrix(-1 0 0 1 581.5 0)"/>
+<path d="M290.8 140.9V237.1"/>
+<path d="M284.6 237.1V364.9"/>
+<path d="M296.9 237.1V364.9"/>
+<path d="M270.3 278H284.6"/>
+<path d="M296.9 278H311.2"/>
+<path d="M270.3 290.8H284.6"/>
+<path d="M296.9 290.8H311.2"/>
+<path d="M270.3 303.5H284.6"/>
+<path d="M296.9 303.5H311.2"/>
+</g></symbol>
+<g id="seerHalf">
+ <path d="M200 20Q166 42 146 80Q136 100 137 112C132 140 134 160 127 180Q119 195 106 203Q128 210 148 206"/>
+ <path d="M200 42Q175 56 161 90"/>
+ <path d="M200 68Q178 72 163 98V135Q164 165 182 176Q192 182 200 183"/>
+ <path d="M153 112C148 135 148 155 152 172Q150 186 135 193"/>
+ <path d="M171 110Q180 106 190 109"/>
+ <path d="M173 120Q181 115 189 120"/>
+ <circle cx="181" cy="121" r="1.8" fill="currentColor" stroke="none"/>
+ <path d="M198 125V136Q198 139 200 139"/>
+ <path d="M182 156Q191 150 200 152"/>
+ <path d="M182 156Q191 163 200 162"/>
+ <path d="M185 180V204"/>
+ <path d="M162 214L200 258"/>
+ <path d="M178 210L200 234"/>
+ <path d="M132 214L98 344L162 333V300L108 308"/>
+ <path d="M184 286Q176 294 180 301"/>
+ <path d="M184 298Q177 307 182 314"/>
+ <path d="M188 308Q184 318 192 322"/>
+ <path d="M191 341L190 351"/>
+ <path d="M178 336L174 344"/>
+</g>
+<symbol id="seer" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#seerHalf"/>
+<use href="#seerHalf" transform="matrix(-1 0 0 1 400 0)"/>
+<circle cx="200" cy="302" r="14"/>
+<path d="M200 341V355"/>
+</g></symbol>
+<g id="doctorHalf">
+ <path d="M162.6 101.7V69.6C162.6 54.2 171.4 46.3 184.6 46.3H199.1"/>
+ <path d="M162.6 85H199.1"/>
+ <path d="M162.6 92.9H199.1"/>
+ <path d="M161.3 128.1Q151.6 128.1 152.5 137.8L161.3 146.6"/>
+ <path d="M161.3 114.9V166.4C161.3 183.9 178.9 194.1 199.1 194.1"/>
+ <path d="M172.7 123.2Q183.3 118.4 193.8 121.9"/>
+ <circle cx="183.3" cy="133.4" r="1.8" fill="currentColor" stroke="none"/>
+ <path d="M158.2 200.2L178.9 194.1L199.1 224.9L181.5 239.8Z"/>
+ <path d="M158.2 200.2L123 208.1"/>
+</g>
+<symbol id="doctor" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#doctorHalf"/>
+<use href="#doctorHalf" transform="matrix(-1 0 0 1 398.2 0)"/>
+<ellipse cx="199.1" cy="107.9" rx="83.6" ry="6.2"/>
+<path d="M240.5 81.5C238.7 58.6 249.3 40.1 264.2 31.3C267.7 48 258.9 70.9 244.9 85.9"/>
+<path d="M244.9 80.6C251 62.1 257.2 47.2 263.3 35.7"/>
+<path d="M193.8 139.5V151.8Q193.8 158 199.6 158Q205.3 158 205.3 151.8"/>
+<path d="M189 172.9Q199.1 178.2 209.7 172.1"/>
+<path d="M192.1 231L199.1 271.9L206.2 231"/>
+<path d="M123 208.1L93.6 310.2H153.8"/>
+<path d="M275.2 208.1L306.4 322.5L253.7 337.9"/>
+<path d="M139.7 249.9L132.3 282.9H175.8"/>
+<path d="M258.5 249.9L266.9 283.8"/>
+<path d="M153.8 304.9H251.9V368.7H153.8Z"/>
+<path d="M199.1 329.1V346.7"/>
+<path d="M189.4 337.9H208.8"/>
+<path d="M173.6 304.9C173.6 289.5 184.6 286.4 200.9 286.4C217.6 286.4 227.3 289.5 228.2 304.9"/>
+<path d="M185 290.8V303.1"/>
+<path d="M194.7 289.1V303.1"/>
+<path d="M205.3 289.1V303.1"/>
+<path d="M215.8 289.9V303.1"/>
+</g></symbol>
+<g id="alphaHalf">
+ <path d="M200.3 42.9L193.8 63.2L186.3 50.3L173.5 67.5L162.8 56.8L143.5 68.6L134.9 56.8L123.7 72.8L35.4 32.7L64.8 147.8L61.1 163.9L47.7 170.3L58.9 178.9L47.7 197.1L55.7 202.4L51.4 222.8L51.4 245.2L56.8 263.4L68.6 254.9L83.5 280.6L94.3 269.9L111.4 296.6L121 288.1L147.8 308.4"/>
+ <path d="M137.1 126.4L200.3 140.3"/>
+ <path d="M91.6 170.8L191.7 204"/>
+ <path d="M102.3 182.6C102.3 209.4 123.7 222.8 150.5 221.7Q177.2 220.6 191.7 205.6"/>
+ <path d="M129.6 183.1A21.4 21.4 0 0 0 164.9 194.9"/>
+ <circle cx="147.8" cy="190.6" r="2.4" fill="currentColor" stroke="none"/>
+ <use href="#wolfEar"/>
+ <use href="#wolfCheek"/>
+</g>
+<symbol id="alpha" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#alphaHalf"/>
+<use href="#alphaHalf" transform="matrix(-1 0 0 1 400.5 0)"/>
+<use href="#wolfMuzzle"/>
+</g></symbol>
+<g id="modHalf">
+ <path d="M121 123.6C121 77.8 137 52.3 161.8 43.4"/>
+ <path d="M124.2 98.1Q145.2 89.2 166.3 87.3"/>
+ <path d="M121 124.9Q142.1 118.5 166.3 118.5"/>
+ <path d="M121.7 128.7Q110.2 128.7 111.5 142.7L121.7 155.4"/>
+ <path d="M121.7 128.7V184.7C121.7 210.2 142.1 222.9 166.3 222.9"/>
+ <path d="M130.6 144Q144.6 135.1 158.6 137.6"/>
+ <circle cx="145.9" cy="149.7" r="2.2" fill="currentColor" stroke="none"/>
+ <path d="M156.1 158V172Q156.1 178.4 166.3 178.4"/>
+</g>
+<symbol id="moderator" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#modHalf"/>
+<use href="#modHalf" transform="matrix(-1 0 0 1 332.5 0)"/>
+<circle cx="166.3" cy="39.6" r="3.2" fill="currentColor" stroke="none"/>
+<path d="M166.3 45.9V86"/>
+<circle cx="173.9" cy="199.4" r="6.4"/>
+<path d="M209.6 172L314 149.1"/>
+<path d="M209.6 211.5L315.9 206.4"/>
+<path d="M209.6 172Q200.6 192.4 209.6 211.5"/>
+<ellipse cx="339.4" cy="175.8" rx="29.3" ry="53.5"/>
+<rect x="316.5" y="169.4" width="25.5" height="14" rx="7"/>
+<circle cx="335" cy="176.4" r="2.2" fill="currentColor" stroke="none"/>
+<path d="M31.3 249V173.3Q31.3 163.7 41.5 163.7H66.9Q77.1 163.7 77.1 173.3V220.4L91.8 203.8L98.1 212.7L70.7 247.8V364.3"/>
+<path d="M31.3 249V364.3"/>
+<path d="M31.3 249H70.7"/>
+<path d="M42.1 168.2V205.1"/>
+<path d="M52.9 168.2V205.1"/>
+<path d="M63.7 168.2V205.1"/>
+<path d="M98.8 226.1H116.6"/>
+<path d="M116.6 229.3C119.8 256 142.1 270 163.7 270C186.6 270 208.9 256 212.1 228"/>
+<path d="M131.2 232.5C135.7 249.7 148.4 256 163.7 256C179 256 191.7 249.7 196.8 233.1"/>
+<path d="M91.8 289.8L71.4 363"/>
+<path d="M91.8 289.8V363"/>
+<path d="M31.3 364.3H268.1"/>
+<path d="M222.3 240.1Q222.3 225.5 237.6 224.2Q255.4 224.2 255.4 240.1V262.4Q255.4 275.1 237.6 276.4H222.3"/>
+<path d="M228.7 242H252.8"/>
+<path d="M228.7 252.2H252.8"/>
+<path d="M228.7 262.4H252.8"/>
+<path d="M217.2 276.4L228.7 363"/>
+<path d="M255.4 231.8L266.9 363"/>
+<path d="M255.4 230.6Q274.5 236.9 275.8 271.9L268.1 363"/>
+</g></symbol>
+<g id="witchHalf">
+ <path d="M167 130V160Q168 190 185 212Q197 226 207.7 230"/>
+ <path d="M162 130L124 206L134 200L141 212L150 205L158 214"/>
+ <path d="M169 136L136 204"/>
+ <path d="M176 143L148 208"/>
+ <path d="M176 147L196 154"/>
+ <path d="M180 162Q187 157 194 162"/>
+ <circle cx="188" cy="162" r="2" fill="currentColor" stroke="none"/>
+ <path d="M202 160V177Q202 182 207.7 182"/>
+ <path d="M193 203Q200 198 207.7 200"/>
+ <path d="M193 203Q200 209 207.7 207"/>
+ <path d="M177 232Q182 262 207.7 280"/>
+ <path d="M177 230Q143 232 134 258Q130 280 133 364.7"/>
+ <path d="M153 328Q172 318 192 326"/>
+</g>
+<symbol id="witch" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#witchHalf"/>
+<use href="#witchHalf" transform="matrix(-1 0 0 1 415.4 0)"/>
+<ellipse cx="207.7" cy="120" rx="93" ry="9"/>
+<path d="M170 112C175 82 183 58 197 44C209 32 229 25 245 26C262 27 278 36 293 46C275 39 257 40 248 55C243 68 240 82 242 94L257 112"/>
+<path d="M173 92H196.7"/>
+<path d="M218.7 92H242"/>
+<path d="M170 106H196.7"/>
+<path d="M218.7 106H253"/>
+<rect x="196.7" y="90" width="22" height="18" rx="3"/>
+<rect x="201.7" y="95" width="12" height="8" rx="2"/>
+<path d="M127.3 364.7H303.5"/>
+<rect x="82.3" y="239.3" width="23.7" height="7.1" rx="1.2"/>
+<path d="M85.9 246.4V270.1"/>
+<path d="M102.4 246.4V270.1"/>
+<rect x="74.6" y="270.1" width="39" height="52" rx="8.3"/>
+<path d="M80 281.9H108.3"/>
+<path d="M80 291.4H108.3"/>
+<path d="M80 300.8H108.3"/>
+<path d="M80 310.3H108.3"/>
+<path d="M81.7 322.1L62.2 357.6Q57.5 367 70.5 367H116.6Q130.8 367 126.1 357.6L109.5 322.1"/>
+<rect x="314.7" y="241.7" width="15.4" height="6.5" rx="1.2"/>
+<path d="M317.7 248.2V270.1"/>
+<path d="M327.1 248.2V270.1"/>
+<rect x="303.5" y="270.1" width="36.7" height="49.7" rx="8.3"/>
+<path d="M309.4 280.7H334.2"/>
+<path d="M309.4 290.2H334.2"/>
+<path d="M309.4 299.6H334.2"/>
+<path d="M309.4 309.1H334.2"/>
+<path d="M304.7 319.7V364.7H339V319.7"/>
+</g></symbol>
+<g id="drunkHalf">
+ <path d="M146.2 120.4C146.2 90.8 164.5 76.3 186 76.3"/>
+ <path d="M146.2 120.4V141.9C146.2 174.2 164.5 193 186 193"/>
+ <path d="M146.2 113.9Q138.7 113.9 139.2 124.7Q139.7 132.2 146.2 137.6"/>
+ <path d="M160.2 194.6C160.2 214.5 172.6 222.6 186 222.6"/>
+ <circle cx="167.2" cy="131.7" r="1.9" fill="currentColor" stroke="none"/>
+</g>
+<symbol id="drunk" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#drunkHalf"/>
+<use href="#drunkHalf" transform="matrix(-1 0 0 1 372 0)"/>
+<path d="M160.7 107.5L181.7 118.8"/>
+<path d="M193.5 115.5H216.1"/>
+<path d="M178.5 140.8V150Q178.5 157 185.5 157Q192.5 157 192.5 150V140.8"/>
+<path d="M182.8 171.5Q188.2 161.3 202.2 162.3Q203.2 171.5 193.5 176.9Q186 177.9 182.8 171.5Z"/>
+<path d="M159.1 194.6L111.8 199.5"/>
+<path d="M213.4 196.2L264.6 200L275.3 222.6"/>
+<path d="M76.3 166.6H117.2"/>
+<path d="M77.3 166.6L79.5 188.2"/>
+<path d="M116.6 166.6L107.5 188.2"/>
+<path d="M84.9 167.7L76.3 153.7"/>
+<path d="M78.4 221.5V191.4Q78.4 188.2 81.6 188.2H104.2Q107.5 188.2 107.5 191.4V221.5"/>
+<path d="M82.7 196.8H103.2"/>
+<path d="M82.7 204.3H103.2"/>
+<path d="M82.7 211.8H103.2"/>
+<path d="M74.7 221.5V314.1"/>
+<path d="M110.2 221.5V314.1"/>
+<path d="M74.7 221.5H110.2"/>
+<path d="M120.9 253.3L108.5 313.5"/>
+<path d="M123.6 253.3L124.7 313.5"/>
+<path d="M74.7 314.1H247.3"/>
+<rect x="203.2" y="246.3" width="32.3" height="38.7"/>
+<path d="M203.2 261.3H235.5"/>
+<path d="M229.6 236V246.3"/>
+<path d="M249.5 253.8V314.1"/>
+<path d="M249.5 253.8L264 289.8"/>
+<rect x="280.7" y="209.7" width="26.9" height="10.8" rx="1.6"/>
+<path d="M276.4 222.6V269.9"/>
+<path d="M311.9 224.7V268.9"/>
+<path d="M276.4 233.4H311.9"/>
+<path d="M276.4 242H311.9"/>
+<path d="M276.4 250.6H311.9"/>
+<path d="M276.4 259.2H311.9"/>
+<path d="M264.6 281.8Q264.6 272.1 274.2 272.1H316.2Q325.9 272.1 325.9 281.8V368.9H264.6Z"/>
+<path d="M266.7 296.8Q282.8 305.4 295.8 300.1Q310.8 294.7 323.7 297.9"/>
+<rect x="275.3" y="330.2" width="43" height="18.3"/>
+<path d="M115 72Q115 81.6 105.3 81.6Q115 81.6 115 91.3Q115 81.6 124.7 81.6Q115 81.6 115 72Z" fill="currentColor"/>
+<path d="M229.1 31.6Q229.1 43.4 217.2 43.4Q229.1 43.4 229.1 55.3Q229.1 43.4 240.9 43.4Q229.1 43.4 229.1 31.6Z" fill="currentColor"/>
+<circle cx="260.3" cy="108" r="3.8" fill="currentColor" stroke="none"/>
+</g></symbol>
+<g id="hunterHalf">
+ <path d="M155 96.5L159.6 49Q162.6 32 181.6 32H200"/>
+ <path d="M155 78H200"/>
+ <path d="M155 90H200"/>
+ <path d="M163.1 123.1Q149.3 123.1 150.4 136.3L163.1 146.6"/>
+ <path d="M163.7 119V174.2C163.7 196.2 179 213 200 213"/>
+ <path d="M174.9 126.1L197.4 137.9"/>
+ <path d="M179.5 143H187.2"/>
+ <path d="M192.3 146.6V161.9Q192.3 169.1 200 169.1"/>
+ <path d="M189.7 184.4H200"/>
+ <path d="M175 189L177 192M181 195L183 198M189 200L191 203M196 204L197 207"/>
+ <path d="M152 216C164 226 182 229 200 229"/>
+ <path d="M146 227C156 252 178 260 200 260"/>
+ <path d="M152 216L146 227"/>
+ <path d="M168 235L172 249"/>
+ <path d="M184 238L187 254"/>
+ <path d="M148 228L110 232Q86 239 79 268L64 364.9"/>
+</g>
+<g id="hunterRifle" transform="translate(220 262) rotate(-36)">
+ <path d="M-64 -9L-130 -6L-146 30L-100 19L-64 10"/>
+ <rect x="-64" y="-10" width="40" height="20" rx="2"/>
+ <path d="M-24 -8H50V8H-24"/>
+ <path d="M20 -8V8"/>
+ <path d="M50 -5H142V5H50"/>
+ <path d="M130 -5V-11H136V-5"/>
+ <path d="M-48 10Q-42 27 -26 10"/>
+ <path d="M-36 -10V-18"/>
+</g>
+<symbol id="hunter" viewBox="0 0 400 400"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+<use href="#hunterHalf"/>
+<use href="#hunterHalf" transform="matrix(-1 0 0 1 400 0)"/>
+<ellipse cx="200" cy="108" rx="92" ry="11"/>
+<path d="M64 364.9H336"/>
+<path d="M200 296V364.9"/>
+<circle cx="213.2" cy="318" r="2.6" fill="currentColor" stroke="none"/>
+<circle cx="213.2" cy="344" r="2.6" fill="currentColor" stroke="none"/>
+<path d="M248 304H286V332H248Z"/>
+<path d="M248 304V318L267 326L286 318V304"/>
+<path d="M139 229L134 316"/>
+<path d="M154 241L148 305"/>
+<use href="#hunterRifle"/>
+</g></symbol>
+</defs>
+</svg>
+<header>
+<h1>THE WOLF GAME</h1>
+<div class="menu">
+<button id="fullscreen" class="icon" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+<button id="gear" class="icon" aria-label="Settings" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+<div id="settings" hidden><div class="level"><h2>LEVEL</h2><div id="levels"></div></div><button id="guideOpen" class="item">Guide</button><h2>SECONDARY ACTIONS</h2><div id="toggles" class="toggles"></div><h2 id="tertiaryTitle">TERTIARY ACTIONS</h2><div id="tertiaryToggles" class="toggles"></div><div id="viewToggles" class="toggles"></div><h2>THEME</h2><div id="themeToggles" class="toggles"></div></div>
+</div>
+<button id="restart">New game</button>
+</header>
+<main>
+<div class="board">
+<div class="row" id="players"></div>
+<div class="row" id="field"></div>
+<section class="controls"><h2 id="phase"><span id="scoutName"></span><span id="alphaBlind"></span><button id="undo"></button></h2><div class="choices" id="choices"></div></section></div>
+<aside id="logPanel"><h2>LOG</h2><ul id="log"></ul></aside>
+</main>
+<div id="guide" class="modal" hidden><div class="panel"><div class="bar"><h2>GUIDE</h2><div id="guideTools"><div id="guideLevels"></div><button class="icon" data-group="Fields" title="Fields" aria-label="Fields"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/></svg></button><button class="icon" data-group="Controls" title="Controls" aria-label="Controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h9M16 6h5M3 12h3M10 12h11M3 18h11M18 18h3"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg></button><button class="icon close" aria-label="Close">×</button></div></div><nav id="guideGroups"></nav><nav id="guideNav"></nav><section id="guideBox"></section></div></div>
+<div id="over" class="modal" hidden><div class="panel"><button class="icon close" aria-label="Close">×</button><h2 id="overTitle"></h2><p id="overMsg"></p><p id="overScore" hidden><b></b><small>THIS LEVEL</small><small id="overStats"></small></p><button id="again">Play again</button><button id="next"></button></div></div>
+<script>
+const TYPES = {
+  v: { name: "VILLAGER", short: "Villager", art: "villager" },
+  w: { name: "WEREWOLF", short: "Werewolf", art: "wolf" },
+  d: { name: "VILLAGER DRUNK", short: "Drunk", art: "drunk" },
+  h: { name: "VILLAGER HUNTER", short: "Hunter", art: "hunter" },
+  x: { name: "VILLAGER WITCH", short: "Witch", art: "witch" },
+  o: { name: "VILLAGER DOCTOR", short: "Doctor", art: "doctor" },
+  s: { name: "VILLAGER SEER", short: "Seer", art: "seer" },
+  a: { name: "ALPHA WEREWOLF", short: "Alpha Werewolf", art: "alpha", unique: true },
+  m: { name: "GAME MODERATOR", short: "Moderator", art: "moderator", unique: true }
+};
+const KEYS = Object.keys(TYPES);
+const SPECIAL = KEYS.slice(2);
+const WOLF = ["w", "a"];
+const HUMANS = KEYS.filter(t => !WOLF.includes(t));
+const ALPHA_BLINDS = 8;
+const ATTACK_ORDER = ["d", "v", "h", "x", "s", "o", "m"];
+const PAY_ORDER = ["v", "h", "x", "s", "o", "d", "m"];
+const SOLO = Array(4).fill({ v: 1 });
+const GRID = ["search", "rescue", "blind", "trap", "reprise", "deploy", "camouflage", "pray", "hunt", "heal", "poison", "cure"];
+const SECONDARY = ["rescue", "blind", "trap", "reprise", "deploy", "camouflage", "pray", "hunt"];
+const TERTIARY = ["heal", "poison", "cure"];
+const BLUE = SECONDARY.filter(key => key !== "pray");
+const BASE = ["search", ...SECONDARY.slice(0, 7)];
+const LEVELS = {
+  1: { actions: BASE, parties: SOLO, close: { v: 12, w: 4 }, retaliate: true, win: "All 4 werewolves are discarded." },
+  2: { actions: [...BASE, "hunt", "heal", "poison"], parties: SOLO, close: { v: 4, w: 8, d: 1, h: 2, x: 1 }, retaliate: false, penalty: ["x", "d"], win: "All 8 werewolves are discarded." },
+  3: { actions: [...BASE, "hunt", ...TERTIARY], parties: [{ x: 1 }, { d: 1 }, { v: 1 }, { v: 1 }], shuffle: true, close: { w: 8, o: 1, s: 1, d: 1, h: 1 }, seen: { a: 1 }, retaliate: true, alpha: true, tally: true, win: "Every werewolf is cured into a villager." }
+};
+const CHARACTERS = [
+  { key: "villager", name: "VILLAGER", art: "villager", info: "A villager in your party pays for every wolf attack.\nVillagers on the field are attacked before the scout.\nBlind and Trap each cost one villager." },
+  { key: "werewolf", name: "WEREWOLF", art: "wolf", info: "A face up werewolf attacks at the start of every turn.\n13|When you flip a werewolf face up, it attacks at once (Retaliate).\n2|Wolves do not retaliate in this level.\n1|Blind turns it face down. Trap removes it.\n23|Blind turns it face down. Trap or Hunt removes it." },
+  { key: "alpha", name: "ALPHA WEREWOLF", art: "alpha", info: "The Alpha is a 9th wolf in Level 3. It lies face down in Field Seen.\nIt attacks at the start and at the end of every turn.\nOnce it is face up, it stays face up. Each Blind adds 1 to its blind count.\nAt 8 Blinds it is blind and stops attacking.\nA blind Alpha brings one werewolf from the Discard back, face up in Field Open, at the start of every turn.\nYou can never trap, hunt or poison it. Only a seer can cure it, after it is blind.\nThe seer is discarded by that cure. The Game Moderator replaces the Alpha, face up.\nWolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves." },
+  { key: "witch", name: "VILLAGER WITCH", art: "witch", info: "A witch in your party can use Poison once per game and Heal once per game.\n3|A healed witch gets both back.\nIt is a villager too: it pays costs and counts in the score." },
+  { key: "seer", name: "VILLAGER SEER", art: "seer", info: "A seer in your party can use Cure.\nThe seer is discarded when it cures, a dead werewolf or the Alpha." },
+  { key: "doctor", name: "VILLAGER DOCTOR", art: "doctor", info: "A doctor in your party can use Heal every turn.\nHeal uses the doctor first and keeps the witch Heal." },
+  { key: "drunk", name: "VILLAGER DRUNK", art: "drunk", info: "A wolf attacks a drunk before any other villager.\nA wolf attack on a drunk always fails.\nA drunk cannot pay for Blind.\nWhen a drunk pays for Trap, Field Open and Field Seen are turned face down and shuffled into Field Close. The Alpha stays where it is.\nWhile a drunk is open, only the drunk can be rescued." },
+  { key: "hunter", name: "VILLAGER HUNTER", art: "hunter", info: "A hunter in your party can use Hunt.\nHunt discards a face up wolf and the hunter." },
+  { key: "moderator", name: "GAME MODERATOR", art: "moderator", info: "The Game Moderator replaces a cured blind Alpha, face up in Field Open.\nWolves in Field Open, Field Close and Field Seen become villagers.\nWolves in the Discard stay wolves until you cure them.\nCuring the Alpha does not win the game by itself." },
+  { key: "unknown", name: "UNKNOWN", art: "unknown", cls: " back", note: "A face down card. Its type is hidden." }
+];
+const zone = (counts = {}) => Object.fromEntries(KEYS.map(t => [t, counts[t] || 0]));
+const $ = id => document.getElementById(id);
+
+const LEVEL_STORE = "wolfGameLevel";
+const saved = localStorage.getItem(LEVEL_STORE);
+let level = saved in LEVELS ? +saved : 1;
+const cfg = () => LEVELS[level];
+
+const inLevel = key => cfg().actions.includes(key);
+const VIEW_TOGGLES = [["log", "Log"], ["select", "Text select"]];
+const STORE = "wolfGameActions";
+const disabled = new Set(JSON.parse(localStorage.getItem(STORE) || '["log"]'));
+const saveDisabled = () => localStorage.setItem(STORE, JSON.stringify([...disabled]));
+if (disabled.delete("bide")) {
+  disabled.add("pray");
+  saveDisabled();
+}
+const SELECT_INIT = "wolfGameTextSelect";
+if (!localStorage.getItem(SELECT_INIT)) {
+  disabled.add("select");
+  localStorage.setItem(SELECT_INIT, "1");
+  saveDisabled();
+}
+const isOn = key => !disabled.has(key);
+
+let carry = 0, s, items = [], prev = {}, sel = null, pending = null, lookup = null, snaps = [];
+
+const shuffled = list => list.map(item => [Math.random(), item]).sort(([a], [b]) => a - b).map(([, item]) => item);
+
+const fresh = () => ({
+  turn: 0, count: 1, over: null, log: [], poison: 0, poisonType: "w", blind: 0, cured: 0, dead: 0, used: { poison: false, heal: false },
+  deck: shuffled(Object.entries(cfg().close).flatMap(([t, n]) => Array(n).fill(t))),
+  z: { ...Object.fromEntries((cfg().shuffle ? shuffled(cfg().parties) : cfg().parties).map((counts, i) => ["p" + i, zone(counts)])), open: zone(), close: zone(cfg().close), seen: zone(cfg().seen), discard: zone() }
+});
+
+const me = () => "p" + s.turn;
+const hand = () => s.z[me()];
+const total = z => KEYS.reduce((n, t) => n + z[t], 0);
+const humans = z => HUMANS.reduce((n, t) => n + z[t], 0);
+const first = (z, order) => order.find(t => z[t] > 0);
+const blind = () => s.blind >= ALPHA_BLINDS;
+const alphaHits = () => (s.z.open.a > 0 && !blind() ? 1 : 0);
+const attackers = () => s.z.open.w + alphaHits();
+const revives = () => s.z.open.a > 0 && blind() && s.z.discard.w > 0;
+const alive = () => Object.entries(s.z).reduce((n, [key, z]) => n + (key === "discard" && !cfg().alpha ? 0 : z.w + z.a), 0);
+const crowning = () => cfg().alpha && s.ring.green.cure && blind() && hand().s > 0 && s.z.open.a > 0;
+const searchable = () => total(s.z.close) + total(s.z.seen) > 0;
+const convert = (zn, from, to, n = 1) => { s.z[zn][from] -= n; s.z[zn][to] += n; };
+const say = msg => s.log.unshift(`Turn ${s.count} · Scout ${s.turn + 1} · ${msg}`);
+const move = (from, to, t, n = 1) => {
+  s.z[from][t] -= n; s.z[to][t] += n;
+  if (from === "close") s.deck.pop();
+  if (to === "discard" && t === "w") s.dead += n;
+};
+const draw = () => s.deck.at(-1);
+const name = t => TYPES[t].name.toLowerCase();
+const noun = t => TYPES[t].short.toLowerCase();
+const survivors = () => Object.entries(s.z).reduce((n, [key, z]) => n + (key === "discard" ? 0 : humans(z)), 0);
+
+const tally = () => `Dead wolves ${s.dead} · Cured wolves ${s.cured} · Alpha cured`;
+const score = () => survivors() - (cfg().penalty ?? []).reduce((n, t) => n + s.z.discard[t], 0);
+const upNext = () => (LEVELS[level + 1] ? level + 1 : 0);
+const victory = msg => {
+  const points = score();
+  s.over = { won: true, msg, tally: cfg().tally && tally(), points, sum: carry + points };
+};
+const win = () => {
+  if (!alive()) victory(cfg().win);
+};
+
+const crown = () => {
+  pay("s");
+  convert("open", "a", "m");
+  const n = s.z.open.w + s.z.close.w + s.z.seen.w;
+  ["open", "close", "seen"].forEach(zn => convert(zn, "w", "v", s.z[zn].w));
+  s.deck = s.deck.map(t => (t === "w" ? "v" : t));
+  s.cured += n;
+  say(`Cure the Alpha Wolf: seer discarded, the game moderator replaced it, ${n} werewol${n === 1 ? "f" : "ves"} in Field Open, Field Close and Field Seen cured`);
+};
+
+let chosen;
+const payer = () => chosen ?? first(hand(), PAY_ORDER);
+const payable = act => PAY_ORDER.filter(t => hand()[t] > 0 && (act === "trap" || t !== "d"));
+const blindPayer = () => chosen ?? first(hand(), payable("blind"));
+const pay = t => { move(me(), "discard", t); chosen = undefined; };
+
+const attack = () => {
+  const from = humans(s.z.open) ? "open" : me();
+  const t = first(s.z[from], ATTACK_ORDER);
+  if (t && t !== "d") move(from, "discard", t);
+  return [from, t];
+};
+
+const damage = (k, source) => {
+  const hits = [];
+  while (hits.length < k) {
+    const hit = attack();
+    if (!hit[1]) break;
+    hits.push(hit);
+  }
+  const lost = hits.filter(([, t]) => t !== "d");
+  if (hits.length) {
+    const field = lost.filter(([from]) => from === "open").length;
+    const absorbed = hits.length - lost.length;
+    const kinds = lost.some(([, t]) => t !== "v") ? ` (${lost.map(([, t]) => name(t)).join(", ")})` : "";
+    const parts = [];
+    if (lost.length || !absorbed) parts.push(`${field} villager${field === 1 ? "" : "s"} lost from field, ${lost.length - field} from hand${kinds}`);
+    if (absorbed) parts.push(`drunk absorbed the attack${absorbed > 1 ? "s" : ""}`);
+    say(`${source}: ${parts.join(", ")}`);
+  }
+  if (hits.length === k) return true;
+  const unpaid = k - hits.length;
+  say(`${source}: no card left, scout ${s.turn + 1} is killed`);
+  s.over = { won: false, msg: `Scout ${s.turn + 1} cannot pay ${unpaid} villager${unpaid > 1 ? "s" : ""} from the hand (${source}).` };
+  return false;
+};
+const poisonDeath = () => {
+  s.poison = 0;
+  const t = s.poisonType;
+  const from = s.z.open[t] ? "open" : "seen";
+  if (!s.z[from][t]) return;
+  move(from, "discard", t);
+  say(`Poison: ${noun(t)} died`);
+};
+
+const revive = t => {
+  move("discard", "seen", t);
+  if (t === "x") s.used = { poison: false, heal: false };
+  say(`Heal: ${noun(t)} back in seen${t === "x" ? ", witch's skills restored" : ""}`);
+};
+
+const searchDone = () => {
+  s.ring.red = "pray";
+  if (!s.ring.blue && choices().some(([, , ok, , , { act }]) => ok && isGreen(act))) s.ring.red = "meditate";
+};
+
+const skipSearch = () => {
+  if (s.ring.red !== "search" || searchable()) return;
+  searchDone();
+  say("Search skipped: no cards");
+};
+
+const startTurn = () => {
+  s.ring = { blue: true, green: Object.fromEntries(TERTIARY.map(key => [key, true])), red: "search", reprise: false };
+  const k = attackers();
+  if (k && !damage(k, "Onslaught")) return;
+  if (revives()) {
+    move("discard", "open", "w");
+    say("Alpha brings a werewolf back from the Discard");
+  }
+  skipSearch();
+};
+
+const endTurn = () => {
+  if (s.over) return;
+  if (s.poison === s.count) poisonDeath();
+  if (alphaHits() && !damage(1, "Alpha attack")) return;
+  win();
+  if (s.over) return;
+  s.turn = (s.turn + 1) % 4;
+  s.count++;
+  startTurn();
+};
+
+const search = (source, t = draw(), action = "Search") => {
+  move(source, "open", t);
+  say(`${action} ${source}: ${name(t)}`);
+  if (WOLF.includes(t) && cfg().retaliate) damage(1, "Retaliate");
+};
+
+const scatter = () => {
+  ["open", "seen"].forEach(zn => KEYS.forEach(t => t !== "a" && move(zn, "close", t, s.z[zn][t])));
+  s.deck = shuffled(Object.entries(s.z.close).flatMap(([t, n]) => Array(n).fill(t)));
+  s.poison = 0;
+  say("Drunk: Field Open and Field Seen turned face down and shuffled into Field Close");
+};
+
+const trap = (source, t = draw()) => {
+  move(source, "discard", t);
+  const paid = payer();
+  pay(paid);
+  say(`Trap ${source}: ${name(t)} discarded`);
+  if (paid === "d") scatter();
+};
+
+const token = key => (key === "crown" ? "cure" : key);
+const isGreen = key => TERTIARY.includes(token(key));
+const rings = key => {
+  const { blue, green, red } = s.ring;
+  if (key === "search") return red === "search" ? [...(blue ? ["blue"] : []), "red"] : [];
+  if (key === "pray") return red === "pray" ? ["red"] : red === "meditate" ? ["green"] : [];
+  if (key === "reprise") return s.ring.reprise ? ["blue"] : [];
+  if (isGreen(key)) return green[token(key)] ? ["green"] : [];
+  return blue ? ["blue"] : [];
+};
+const idle = () => !crowning() && !choices().some(([, , ok, , , { act }]) => ok && act !== "pray");
+const settle = () => {
+  if (s.over) return;
+  win();
+  if (s.over) return;
+  skipSearch();
+  if (idle()) endTurn();
+};
+const act = (key, run) => () => {
+  run();
+  if (key === "pray") {
+    s.ring = { blue: false, green: {}, red: null, reprise: false };
+    endTurn();
+    return;
+  }
+  if (key === "search") {
+    s.ring.reprise = s.ring.blue;
+    searchDone();
+  } else if (isGreen(key)) s.ring.green[token(key)] = false;
+  else s.ring.blue = s.ring.reprise = false;
+  settle();
+};
+const arm = ([title, hint, ok, run, group, meta]) => [title, hint, ok && rings(meta.act).length > 0, act(meta.act, run), group, meta];
+
+const odds = z => {
+  const n = total(z);
+  if (!n) return "";
+  const v = Math.round(100 * humans(z) / n);
+  return `<i>V ${v}% · W ${100 - v}%</i>`;
+};
+
+const CURE = "Remove a wolf, from the discard.\nPlace a villager, onto the discard.\nDiscard the seer, from your party.";
+const NEEDS = "Needs a villager in your party";
+const entry = (label, hint, why, run, group, deck, type, count) =>
+  [label, hint, !why, run, group, { act: group || "search", deck, type, count }];
+
+const choices = () => {
+  const z = s.z;
+  const random = text => `${text}${odds(z.close)}`;
+  const some = (zn, list) => list.filter(t => !SPECIAL.includes(t) || z[zn][t] > 0);
+  const tag = t => (SPECIAL.includes(t) ? `: ${TYPES[t].short}` : "");
+  const seenLabel = verb => t => `${verb} Seen: ${TYPES[t].short}`;
+  const by = (zn, list, label, hint, block, none, run, group) =>
+    some(zn, list).map(t => entry(label(t), hint(noun(t)), block(t) || (z[zn][t] > 0 ? "" : none), () => run(t), group, zn === me() ? "party" : zn, t, z[zn][t]));
+  const noClose = "Nothing in Field Close";
+  const noSeen = "Nothing in Field Seen";
+  const noWolf = "No face up werewolf";
+  const noVillager = "No face up villager";
+  const unlocked = t => (t === "a" ? "Only a seer can cure the Alpha" : "");
+  const closeWhy = total(z.close) > 0 ? "" : noClose;
+  if (crowning()) return [entry("Cure the Alpha Wolf", "", "", crown, "crown", "")].map(arm);
+  const witch = hand().x > 0;
+  const doctor = hand().o > 0;
+  const seer = hand().s > 0;
+  const pays = payer() === undefined ? NEEDS : "";
+  const needSeer = seer ? "" : "Needs a seer in your party";
+  return [
+    entry("Search Close", random("Select a random face down card, from Field Close.\nPlace it face up, onto the field."), closeWhy, () => search("close"), undefined, "close", null, total(z.close)),
+    ...by("seen", KEYS, seenLabel("Search"), n => `Select a face down ${n}, from Field Seen.\nPlace it face up, onto the field.`, () => "", noSeen, t => search("seen", t)),
+    ...by("open", WOLF, t => `Blind${tag(t)}`, n => `Select a face up ${n}, from the field.\nPlace it face down, onto the field.\nDiscard a villager, from your party.`, t => (blindPayer() === undefined ? NEEDS : t === "a" && blind() ? "Alpha is already blind" : ""), noWolf, t => {
+      pay(blindPayer());
+      if (t === "a") s.blind++; else move("open", "seen", t);
+      say(t === "a" ? `Blind: alpha werewolf ${s.blind}/${ALPHA_BLINDS}` : `Blind: ${noun(t)} hidden`);
+    }, "blind"),
+    ...by("open", HUMANS, t => `Rescue${tag(t)}`, n => `Select a face up ${n}, from the field.\nAdd it, to your party.`, t => (z.open.d && t !== "d" ? "Drunk is open" : ""), noVillager, t => { move("open", me(), t); say(`Rescue: ${noun(t)} saved`); }, "rescue"),
+    entry("Pray", "Do nothing.", "", () => say(s.ring.red === "meditate" ? "Meditate" : "Pray"), "pray", "", null, 1),
+    entry("Trap Close", random("Discard a random face down card, from the field.\nDiscard a villager, from your party."), pays || closeWhy, () => trap("close"), "trap", "close", null, total(z.close)),
+    ...by("seen", KEYS, seenLabel("Trap"), n => `Discard a face down ${n}, from the field.\nDiscard a villager, from your party.`, t => pays || unlocked(t), noSeen, t => trap("seen", t), "trap"),
+    ...by(me(), HUMANS, t => `Deploy${tag(t)}`, n => `Select a ${n}, from your party.\nPlace it face up, onto the field.`, () => "", NEEDS, t => { move(me(), "open", t); say(`Deploy: ${noun(t)} to open`); }, "deploy"),
+    ...by("open", HUMANS, t => `Camouflage${tag(t)}`, n => `Select a face up ${n}, from the field.\nPlace it face down, onto the field.`, () => "", noVillager, t => { move("open", "seen", t); say(`Camouflage: ${noun(t)} hidden`); }, "camouflage"),
+    entry("Reprise Close", random("Search again."), closeWhy, () => search("close", draw(), "Reprise"), "reprise", "close", null, total(z.close)),
+    ...by("seen", KEYS, seenLabel("Reprise"), n => `Search again for a known ${n}.`, () => "", noSeen, t => search("seen", t, "Reprise"), "reprise"),
+    ...by("open", WOLF, t => `Hunt${tag(t)}`, n => `Discard a face up ${n}, from the field.\nDiscard the hunter, from your party.`, t => (hand().h > 0 ? unlocked(t) : "Needs a hunter in your party"), noWolf, t => {
+      move("open", "discard", t); pay("h"); if (s.poison && s.poisonType === t && !z.open[t]) s.poison = 0; say(`Hunt: ${noun(t)} discarded`);
+    }, "hunt"),
+    ...by("open", WOLF, t => `Poison${tag(t)}`, n => `Select a face up ${n}, from the field.\nDiscard it, at the end of the next turn.`, t => (!witch ? "Needs a witch in your party" : s.used.poison ? "Poison already used" : unlocked(t)), noWolf, t => {
+      s.used.poison = true; s.poison = s.count + 1; s.poisonType = t; say(`Poison: ${noun(t)} poisoned`);
+    }, "poison"),
+    ...by("discard", HUMANS, t => `Heal${tag(t)}`, n => `Remove a ${n}, from the discard.\nPlace it face down, onto the field.`, () => (doctor || witch ? (doctor || !s.used.heal ? "" : "Heal already used") : "Needs a doctor or a witch in your party"), "Nothing in Field Discard", t => { if (!doctor) s.used.heal = true; revive(t); }, "heal"),
+    entry("Cure: Dead Werewolf", CURE, needSeer || (z.discard.w > 0 ? "" : "No dead werewolf"), () => {
+      pay("s"); convert("discard", "w", "v"); s.cured++; say("Cure: dead werewolf became a dead villager in the discard, seer discarded");
+    }, "cure", "discard", "w", z.discard.w)
+  ].map(arm)
+    .filter(([, , , , group]) => !group || (inLevel(group) && isOn(group)));
+};
+
+const card = ({ art, name, cls = "" }) => `<div class="card face${cls}"><svg class="art"><use href="#${art}"/></svg><span class="label">${name}</span></div>`;
+const face = t => card(TYPES[t]);
+const seen = t => card({ ...TYPES[t], cls: " inverse" });
+const back = `<div class="card back"><svg class="art"><use href="#unknown"/></svg></div>`;
+const stack = (card, n, caption, zone, type = "") => {
+  const key = `${zone}:${type}`;
+  const mark = lookup ? (lookup.has(key) ? " use" : " dim") : (quick(zone, type) ? " quick" : "") + (dropTargets(zone, type).size ? " grab" : "");
+  return n ? `<figure class="stack${n > 1 ? " multi" : ""}${mark}" data-zone="${zone}" data-type="${type}"${mark === " use" ? ' tabindex="0" role="button"' : ""}>${card}<b class="count">×${n}</b>${caption ? `<figcaption>${caption}</figcaption>` : ""}</figure>` : "";
+};
+const faces = zone => KEYS.map(t => stack(face(t), s.z[zone][t], "", zone, t)).join("");
+
+const panel = (key, title, body, active = false) => {
+  const snapshot = JSON.stringify(s.z[key]);
+  const flash = prev[key] !== undefined && prev[key] !== snapshot;
+  prev[key] = snapshot;
+  return `<section class="zone${active ? " active" : ""}${flash ? " flash" : ""}" data-panel="${key}"><h2>${title}</h2><div class="cards">${body || "<em>empty</em>"}</div></section>`;
+};
+
+const ACTIONS = {
+  search: ["Search", "Select a face down card, from the field.\nPlace it face up, onto the field."],
+  rescue: ["Rescue", "Select a face up villager, from the field.\nAdd it, to your party."],
+  blind: ["Blind", "Select a face up wolf, from the field.\nPlace it face down, onto the field.\nDiscard a villager, from your party."],
+  trap: ["Trap", "Discard a face down card, from the field.\nDiscard a villager, from your party."],
+  deploy: ["Deploy", "Select a villager, from your party.\nPlace it face up, onto the field."],
+  camouflage: ["Camouflage", "Select a face up villager, from the field.\nPlace it face down, onto the field."],
+  reprise: ["Reprise", "Search again."],
+  pray: ["Pray", "Do nothing."],
+  hunt: ["Hunt", "Discard a face up wolf, from the field.\nDiscard the hunter, from your party."],
+  heal: ["Heal", "Remove a villager, from the discard.\nPlace it face down, onto the field."],
+  poison: ["Poison", "Select a face up wolf, from the field.\nDiscard it, at the end of the next turn."],
+  cure: ["Cure", CURE]
+};
+const ODDS = ["search", "reprise"];
+
+const entries = act => items.filter(item => item[5].act === act);
+const spots = ({ 5: { deck, type } }) => (deck === "party" ? [me()] : deck === "alpha" ? ["open", "seen"] : [deck]).map(zone => `${zone}:${type ?? ""}`);
+
+const DEFAULTS = { close: ["search", "reprise"], seen: ["search", "reprise"], open: ["camouflage", "blind"], discard: ["heal", "cure"] };
+const find = (acts, zone, type) => acts.flatMap(entries).find(item => item[2] && item[5].count > 0 && spots(item).includes(`${zone}:${type}`));
+const locked = () => sel || pending || s.over;
+const quick = (zone, type) => (locked() ? undefined : find(zone === me() ? ["deploy"] : DEFAULTS[zone] ?? [], zone, type));
+const DUTIES = { h: "hunt", x: "poison" };
+const dropTargets = (zone, type) => {
+  const targets = new Map();
+  const add = (act, at, t, key = `${at}:${t}`) => {
+    const item = find([act], at, t);
+    if (item) targets.set(key, item);
+  };
+  if (locked()) return targets;
+  if (zone === me()) {
+    const duty = DUTIES[type] ?? (type !== "d" && "blind");
+    add("trap", "close", "");
+    KEYS.forEach(t => add("trap", "seen", t));
+    if (duty) WOLF.forEach(t => add(duty, "open", t));
+  } else if (zone === "open" && HUMANS.includes(type)) add("rescue", "open", type, `panel:${me()}`);
+  return targets;
+};
+
+const unselect = () => { sel = pending = null; };
+const runItem = item => { snaps.push(JSON.stringify(s)); item[3](); unselect(); };
+const choosePayer = item => (["trap", "blind"].includes(item[5].act) && payable(item[5].act).length > 1 ? (pending = item) : runItem(item));
+const direct = act => entries(act).every(item => item[5].deck === "");
+
+const button = (attrs, off, title, text) => `<button ${attrs}${off || s.over ? " disabled" : ""}><b>${title}</b><span>${text}</span></button>`;
+const slot = key => {
+  if (!inLevel(key)) return `<div class="redacted"><span>REDACTED</span></div>`;
+  const [label, hint] = ACTIONS[key];
+  const list = entries(key);
+  const off = !list.some(item => item[2]);
+  const title = key === "pray" && s.ring.red === "meditate" ? "Meditate" : label;
+  const chance = ODDS.includes(key) && total(s.z.close) ? odds(s.z.close) : "";
+  return button(`data-a="${key}" class="${off || s.over ? "" : rings(key).join(" ")}" aria-pressed="${sel === key}"`, off, title, `${hint}${chance}`);
+};
+const focusSlot = () => {
+  const box = $("choices");
+  (box.querySelector(`[data-a="${sel}"]`) || box.querySelector("button:not(:disabled)"))?.focus({ preventScroll: true });
+};
+const render = () => {
+  const z = s.z;
+  items = choices();
+  if (s.over || (sel && !entries(sel).length)) unselect();
+  lookup = pending ? new Map(payable(pending[5].act).map(t => [`${me()}:${t}`, pending])) : sel ? new Map(entries(sel).filter(item => item[2] && item[5].count > 0).flatMap(item => spots(item).map(key => [key, item]))) : null;
+  $("players").innerHTML = [0, 1, 2, 3].map(i => panel("p" + i, `SCOUT ${i + 1}`, faces("p" + i), i === s.turn)).join("");
+  $("field").innerHTML = [
+    panel("open", `FIELD OPEN${s.poison ? " · POISON" : ""}`, faces("open")),
+    panel("close", "FIELD CLOSE", stack(back, total(z.close), "", "close")),
+    panel("seen", "FIELD SEEN", KEYS.map(t => stack(seen(t), z.seen[t], "", "seen", t)).join("")),
+    panel("discard", "FIELD DISCARD", faces("discard"))
+  ].join("");
+  const alpha = cfg().alpha;
+  $("scoutName").textContent = `SCOUT ${s.turn + 1}${"\u00a0".repeat(6)}[ Round ${String(Math.ceil(s.count / 4)).padStart(2, "0")} ]`;
+  $("alphaBlind").textContent = alpha ? `ALPHA BLIND ${s.blind}/${ALPHA_BLINDS}` : "";
+  $("alphaBlind").title = alpha ? `Blinds on the Alpha. At ${ALPHA_BLINDS} it is blind: it stops attacking, revives a dead wolf each turn, and a seer can cure it.` : "";
+  $("alphaBlind").className = blind() ? "" : "hot";
+  $("undo").textContent = sel || pending ? "Back" : "Undo";
+  $("undo").disabled = !sel && !pending && !snaps.length;
+  const solo = !!crowning();
+  $("choices").classList.toggle("solo", solo);
+  $("choices").innerHTML = solo ? button('data-a="crown" class="cure"', false, "Cure the Alpha Wolf", "") : GRID.map(slot).join("");
+  $("logPanel").hidden = !isOn("log");
+  document.body.classList.toggle("selectable", isOn("select"));
+  $("log").innerHTML = s.log.map(line => `<li>${line}</li>`).join("");
+  $("over").hidden = !s.over || s.over.closed;
+  if (s.over) {
+    $("over").className = `modal ${s.over.won ? "won" : "lost"}`;
+    $("overTitle").textContent = s.over.won ? "VICTORY" : "DEFEAT";
+    $("overMsg").textContent = s.over.msg;
+    $("overScore").hidden = !s.over.won;
+    $("again").hidden = s.over.won;
+    $("next").hidden = !s.over.won;
+    $("next").textContent = upNext() ? "Next level" : "New game";
+    $("overScore").firstChild.textContent = `Score: ${s.over.points}`;
+    $("overStats").textContent = [`${upNext() ? "Total" : "Final total"} ${s.over.sum}`, s.over.tally].filter(Boolean).join("\n");
+  }
+};
+
+const newGame = () => { s = fresh(); prev = {}; snaps = []; unselect(); startTurn(); render(); };
+
+document.addEventListener("click", event => {
+  const { target } = event;
+  const control = target.closest("#choices button");
+  const piece = target.closest("[data-zone]");
+  if (target.closest("#undo")) {
+    if (pending) pending = null; else if (sel) unselect(); else s = JSON.parse(snaps.pop());
+  } else if (s.over) return;
+  else if (control) {
+    pending = null;
+    sel = sel === control.dataset.a ? null : control.dataset.a;
+    if (sel && direct(sel)) runItem(entries(sel)[0]);
+  } else if (pending) {
+    const item = piece && lookup.get(`${piece.dataset.zone}:${piece.dataset.type}`);
+    if (item) {
+      chosen = piece.dataset.type;
+      runItem(item);
+      chosen = undefined;
+    } else pending = null;
+  } else if (sel && piece) {
+    const item = lookup.get(`${piece.dataset.zone}:${piece.dataset.type}`);
+    if (!item) return;
+    choosePayer(item);
+  } else if (sel) unselect();
+  else {
+    const item = quick(piece?.dataset.zone, piece?.dataset.type);
+    if (!item) return;
+    choosePayer(item);
+  }
+  render();
+  if (event.detail === 0 && !target.closest("#undo")) focusSlot();
+});
+
+const DRAG_THRESHOLD = 6;
+let press = null;
+let swallow = false;
+const keyOf = node => (node.dataset.panel ? `panel:${node.dataset.panel}` : `${node.dataset.zone}:${node.dataset.type}`);
+const dropNodes = () => [...document.querySelectorAll("[data-zone],[data-panel]")];
+const dragSource = ({ zone, type }) => zone === me() || (zone === "open" && HUMANS.includes(type));
+const endPress = () => {
+  press?.ghost?.remove();
+  press?.node.classList.remove("lifted");
+  document.body.classList.remove("dragging");
+  dropNodes().forEach(node => node.classList.remove("use"));
+  press = null;
+};
+const dropOn = (x, y) => {
+  const at = document.elementFromPoint(x, y);
+  return at && [at.closest("[data-zone]"), at.closest("[data-panel]")].find(node => node && press.map.has(keyOf(node)));
+};
+const placeGhost = ({ clientX, clientY }) => {
+  const { ghost } = press;
+  ghost.style.transform = `translate(${clientX - ghost.offsetWidth / 2}px,${clientY - ghost.offsetHeight / 2}px)`;
+};
+document.addEventListener("pointerdown", event => {
+  const node = event.target.closest(".stack[data-zone]");
+  if (!node || !event.isPrimary || event.button || locked() || !dragSource(node.dataset)) return;
+  const { zone, type } = node.dataset;
+  press = { node, zone, type, x: event.clientX, y: event.clientY, map: dropTargets(zone, type) };
+});
+document.addEventListener("pointermove", event => {
+  if (!press) return;
+  if (event.pointerType === "mouse" && !event.buttons) return endPress();
+  if (!press.ghost) {
+    if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < DRAG_THRESHOLD) return;
+    press.ghost = press.node.querySelector(".card").cloneNode(true);
+    press.ghost.classList.add("ghost");
+    document.body.append(press.ghost);
+    press.node.classList.add("lifted");
+    document.body.classList.add("dragging");
+    dropNodes().forEach(node => node.classList.toggle("use", press.map.has(keyOf(node))));
+  }
+  placeGhost(event);
+});
+document.addEventListener("pointerup", event => {
+  if (!press?.ghost) return endPress();
+  const target = dropOn(event.clientX, event.clientY);
+  const item = target && press.map.get(keyOf(target));
+  const { zone, type } = press;
+  endPress();
+  swallow = true;
+  setTimeout(() => { swallow = false; });
+  if (!item) return;
+  chosen = zone === me() && ["trap", "blind"].includes(item[5].act) ? type : undefined;
+  runItem(item);
+  chosen = undefined;
+  render();
+});
+document.addEventListener("pointercancel", endPress);
+document.addEventListener("click", event => {
+  if (!swallow) return;
+  event.stopPropagation();
+  event.preventDefault();
+}, true);
+
+const drawToggles = (id, list) => {
+  $(id).innerHTML = list.map(([key, label]) => `<label><input type="checkbox" data-key="${key}"${isOn(key) ? " checked" : ""}>${label}</label>`).join("");
+};
+const mountToggles = id => {
+  $(id).addEventListener("change", event => {
+    const { key } = event.target.dataset;
+    if (event.target.checked) disabled.delete(key); else disabled.add(key);
+    saveDisabled();
+    render();
+  });
+};
+mountToggles("toggles");
+mountToggles("tertiaryToggles");
+mountToggles("viewToggles");
+drawToggles("viewToggles", VIEW_TOGGLES);
+
+const THEMES = [["default", "Default"], ["sharp", "Sharp"]];
+const THEME_STORE = "wolfGameTheme";
+const storedTheme = localStorage.getItem(THEME_STORE);
+let theme = THEMES.some(([key]) => key === storedTheme) ? storedTheme : "default";
+const applyTheme = () => { document.documentElement.dataset.theme = theme; };
+$("themeToggles").innerHTML = THEMES.map(([key, label]) => `<label><input type="radio" name="theme" value="${key}"${key === theme ? " checked" : ""}>${label}</label>`).join("");
+$("themeToggles").addEventListener("change", event => {
+  theme = event.target.value;
+  localStorage.setItem(THEME_STORE, theme);
+  applyTheme();
+});
+applyTheme();
+
+$("levels").innerHTML = Object.keys(LEVELS).map(n => `<button data-level="${n}">${n}</button>`).join("");
+const syncLevel = () => {
+  localStorage.setItem(LEVEL_STORE, level);
+  const pairs = keys => keys.filter(inLevel).map(key => [key, ACTIONS[key][0]]);
+  drawToggles("toggles", pairs(SECONDARY));
+  drawToggles("tertiaryToggles", pairs(TERTIARY));
+  $("tertiaryTitle").hidden = !$("tertiaryToggles").children.length;
+  document.querySelectorAll("#levels button").forEach(button => {
+    const on = +button.dataset.level === level;
+    button.classList.toggle("on", on);
+    button.setAttribute("aria-pressed", on);
+  });
+};
+const start = (n, kept = 0) => {
+  level = n;
+  carry = kept;
+  syncLevel();
+  newGame();
+};
+$("levels").addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  start(+button.dataset.level);
+});
+syncLevel();
+
+const setMenu = open => {
+  $("settings").hidden = !open;
+  $("gear").setAttribute("aria-expanded", open);
+};
+$("gear").addEventListener("click", () => setMenu($("settings").hidden));
+const fullscreenBtn = $("fullscreen");
+if (document.fullscreenEnabled) {
+  const icon = fullscreenBtn.querySelector("path");
+  const enterIcon = icon.getAttribute("d");
+  const exitIcon = "M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3";
+  fullscreenBtn.addEventListener("click", () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
+  document.addEventListener("fullscreenchange", () => {
+    const active = !!document.fullscreenElement;
+    icon.setAttribute("d", active ? exitIcon : enterIcon);
+    fullscreenBtn.title = fullscreenBtn.ariaLabel = active ? "Exit full screen" : "Full screen";
+  });
+} else fullscreenBtn.remove();
+document.addEventListener("click", event => { if (!event.target.closest(".menu")) setMenu(false); });
+const modals = [...document.querySelectorAll(".modal")];
+const closeModals = () => {
+  modals.forEach(modal => { modal.hidden = true; });
+  if (s.over) s.over.closed = true;
+};
+const openModal = id => { setMenu(false); $(id).hidden = false; };
+const titled = name => name.toLowerCase().replace(/\b\w/g, m => m.toUpperCase());
+const debut = found => +Object.keys(LEVELS).find(n => found(LEVELS[n]));
+const holds = t => c => [...c.parties, c.close, c.seen].some(z => z?.[t]);
+const typeOf = Object.fromEntries(KEYS.map(t => [TYPES[t].art, t]));
+const characterMin = ({ art }) => (art === "moderator" ? debut(c => c.alpha) : typeOf[art] ? debut(holds(typeOf[art])) : 1);
+const actionMin = label => debut(c => c.actions.includes(label.split(" ")[0].toLowerCase()));
+const actionNames = (keys, n) => keys.filter(k => LEVELS[n].actions.includes(k)).map(titled).join(", ");
+const gallery = n => CHARACTERS.filter(c => characterMin(c) <= n).map(c => (c.note ? `<figure class="stack">${card(c)}<figcaption>${c.note}</figcaption></figure>` : card(c))).join("");
+const GUIDE = [
+  ["Basics", [
+    ["Setup", "Four scouts, each forms a scout party along with one villager.\nThe remaining cards are shuffled face down onto the field, in Field Close.\nScout 1 goes first."],
+    ["Turn Steps", "1. Onslaught.\n2. Take your actions in any order.\nSearch is required.\n1|You may take one blue action.\n23|You may take one blue action, and each green action once.\nPray ends the turn.\nThe turn also ends when no other action is left. If you used a blue action before Search, the turn ends when Search is done.\n23|Unless a green action is still possible. Then Pray gets a green ring and is called Meditate.\nThen the next scout plays."],
+    ["Win", "1|Level 1: all 4 werewolves are trapped.\n2|Level 2: all 8 werewolves are discarded.\n3|Level 3: no werewolf is left anywhere, not even in the Discard. Wolves that are trapped, hunted or poisoned stay wolves in the Discard until you cure them. Curing the Alpha does not win by itself. A cured wolf in the Discard becomes a dead villager.\nAll scouts win or lose together."],
+    ["Score", "When you win, the score counts every villager card still alive: in a party, in Field Open, Field Close or Field Seen. Dead cards in the Discard do not count. A cured wolf is a villager.\n2|Level 2: subtract 1 for each witch or drunk in the Discard.\nNext level adds this score to the total. The last level shows the final total.\nChoosing a level or New game resets the total."],
+    ["Lose", "If a scout is attacked when they have no villagers to protect them, the wolf kills the scout.\nIf any scout dies everyone loses the game."]
+  ]],
+  ["Levels", [
+    ["Level 01 Setup", "4 villagers in the party (1 per scout)\n12 villagers and 4 wolves on the field"],
+    ["Level 02 Setup", "4 villagers in the party (1 per scout)\n4 villagers and 8 wolves on the field\nWitch, drunk and 2 hunters are on the field\nWolves do not retaliate. Onslaught still happens."],
+    ["Level 03 Setup", "Witch, drunk and 2 villagers are in the party (1 per scout, at random)\n8 wolves on the field\nDoctor, seer, drunk and 1 hunter on the field\n1 Alpha Werewolf in Field Seen\nThe Alpha needs 8 Blinds and stays face up. Only a seer cures it, and the seer is discarded.\nThe Game Moderator replaces it, face up. Wolves in Open, Close and Seen become villagers. Wolves in the Discard stay wolves.\nWolves retaliate."]
+  ]],
+  ["Turn", [
+    ["Onslaught", "At the start of each turn, all face up wolves attack the active scout.\n3|Level 3: a blind Alpha does not attack. After the wolves attack, it brings one werewolf from the Discard back, face up in Field Open. That wolf does not retaliate."],
+    ["Wolf Attack", "When a wolf attacks the scout, protect the scout by sacrificing a villager from the scout party."],
+    ["Attack Priority", "1|Villager > Scout\n2|Drunk > Villager > Hunter > Witch > Scout\n3|Drunk > Villager > Hunter > Witch > Seer > Doctor > Scout\nEach attack hits Field Open first, if it holds a villager card. If not, it hits the scout."],
+    ["Proximity", "A wolf prefers attacking a villager on the field over attacking the scout."],
+    ["Search", "Select a face down card, from the field.\nPlace it face up, onto the field.\nPick a random card from Field Close, or a known type from Field Seen. Search is required, unless no card is left to search. Then Search is skipped.\nSearch has a blue ring and a red ring. It does not remove other blue rings.\nWhen Search is done, its red ring moves to Pray and its blue ring moves to Reprise."],
+    ["Retaliate", "13|When you flip a wolf face up, it attacks the active scout.\n2|Wolves do not retaliate in this level. A wolf you flip face up does not attack."],
+    ["Operate", n => `Take actions in any order.\nBlue actions, one per turn: ${actionNames(BLUE, n)}.${actionNames(TERTIARY, n) && `\nGreen actions, each once per turn: ${actionNames(TERTIARY, n)}.`}`]
+  ]],
+  ["Fields", [
+    ["Field Open", "Face up cards. Wolves here attack every turn. Villagers here are attacked first."],
+    ["Field Close", "Face down cards. Nobody knows their type."],
+    ["Field Seen", "Face down cards with a known type. You can pick them by type."],
+    ["Field Discard", "Cards out of the game.\n1|In this level villagers are never added back.\n23|Heal can bring a villager back, face down into Field Seen.\n3|In Level 3 dead werewolves stay here until cured. A blind Alpha can bring them back to the field.\n3|A cured wolf becomes a dead villager here. Heal can bring it back like any villager."]
+  ]],
+  ["Actions", [
+    ["Rescue", "Select a face up villager, from the field.\nAdd it, to your party.\nNeeds a face up villager."],
+    ["Blind", "Select a face up wolf, from the field.\nPlace it face down, onto the field.\nDiscard a villager, from your party.\nNeeds a face up wolf.\n3|The Alpha stays face up: each Blind adds 1 to its blind count."],
+    ["Trap", "Discard a face down card, from the field.\nDiscard a villager, from your party.\nPick the top of Field Close or a known type from Field Seen. Trap only works on face down cards.\nYou choose which party card pays.\nIf a drunk pays, Field Open and Field Seen are turned face down and shuffled into Field Close. The Alpha stays where it is."],
+    ["Reprise", "Search again.\nPick the top of Field Close or a type from Field Seen.\nReprise is a blue action. It starts blank.\nIt gets the blue ring of Search when Search is done.\nAfter a blue action, Reprise stays blank.\n13|A flipped wolf triggers Retaliate."],
+    ["Deploy", "Select a villager, from your party.\nPlace it face up, onto the field.\nNeeds a villager in hand."],
+    ["Camouflage", "Select a face up villager, from the field.\nPlace it face down, onto the field.\nNeeds an open villager."],
+    ["Pray", "Do nothing.\nRemove all rings, and end your turn.\nNeeds Search done, or nothing left to Search.\n23|With a green ring it is called Meditate. The log says Meditate."],
+    ["Hunt", "Discard a face up wolf, from the field.\nDiscard the hunter, from your party.\nNeeds a hunter in hand and a face up wolf."],
+    ["Heal", "Remove a villager, from the discard.\nPlace it face down, onto the field.\nA healed character gets their skill back.\nThe card comes back face down, in Field Seen.\n2|Once in a game with a witch.\n3|Once in a game with a witch, every turn with a doctor.\n23|Green action: once per turn."],
+    ["Poison", "Select a face up wolf, from the field.\nDiscard it, at the end of the next turn.\nNeeds a witch in hand.\nGreen action: once per turn."],
+    ["Cure", `Level 3.\n${CURE}\nNeeds a seer in hand. Use it on dead werewolves in the discard. The cured wolf stays in the discard as a dead villager.\nGreen action: once per turn.`],
+    ["Cure the Alpha Wolf", "Level 3.\nShown alone when the Alpha is blind, a seer is in your party, and your Cure ring is left.\nThe Game Moderator replaces the Alpha. Wolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves.\nThe seer is discarded. It is your Cure action, once per turn. Heal and Poison stay available."]
+  ]],
+  ["Characters", [
+    ["Characters", "", n => `<div class="gallery">${gallery(n)}</div>`],
+    ...CHARACTERS.map(c => [titled(c.name), c.info ?? c.note, `<div class="portrait">${card(c)}</div>`, characterMin(c)])
+  ]],
+  ["Controls", [
+    ["Slot Colours", "A blue ring marks a blue action. One blue action removes all blue rings.\n23|Each green action has its own dashed green ring. A green action removes only its own ring.\nSearch has a blue ring and a red ring. Search keeps other blue rings.\nWhen Search is done, its red ring moves to Pray and its blue ring moves to Reprise.\n23|If a blue action came before Search and a green action is still possible, Pray gets a dashed green ring instead.\nReprise is blank before Search. Pray removes all rings.\nA slot with no ring is not possible now.\nA slot marked REDACTED does not exist at this level."],
+    ["Choosing", "Click an action to select it. Its targets light up on the board. Click one to run the action.\nPray runs at once. Esc or a click elsewhere clears the selection.\nFor Blind and Trap, if your party has more than one kind of card that can pay, click the party card that pays. A drunk cannot pay for Blind."],
+    ["Quick Actions", "With no action selected, use the party of the active scout.\nTap a party card: Deploy.\nDrag a party card onto a face down card: Trap.\nDrag a villager from Field Open onto your party: Rescue.\nDrag a party card onto a face up wolf: Blind.\n23|Drag the hunter onto a face up wolf: Hunt.\n23|Drag the witch onto a face up wolf: Poison.\nClick Field Close or Seen: Search or Reprise.\nClick a villager in Field Open: Camouflage.\nClick a wolf in Field Open: Blind.\n23|Click a villager in Field Discard: Heal.\n3|Click a werewolf in Field Discard: Cure."],
+    ["Undo", "Undo reverts your last action, back to the start of the game, also after a win or a loss.\nField Close keeps its hidden order, so a repeated Search shows the same card.\nWhile an action is selected the button reads Back and clears the selection."],
+    ["Menu", "1|Switch actions off in the gear menu. Switched off actions stay greyed.\n23|Switch secondary and tertiary actions off in the gear menu. Switched off actions stay greyed."]
+  ]]
+];
+const TERMS = GUIDE.flatMap(([group, list]) => list.map(([label, text, extra = "", min = group === "Levels" ? list.findIndex(t => t[0] === label) + 1 : group === "Actions" ? actionMin(label) : 1]) => ({ group, label, text, extra, min })));
+const LINE_TAG = /^([123]+)\|/;
+const forLevel = (text, n) => text.split("\n").filter(line => (line.match(LINE_TAG)?.[1] ?? "123").includes(n)).map(line => line.replace(LINE_TAG, "")).join("\n");
+const resolve = (value, n) => (typeof value === "function" ? value(n) : value);
+const termsFor = n => TERMS.filter(t => t.min <= n).map(t => ({ ...t, text: forLevel(resolve(t.text, n), n), extra: resolve(t.extra, n) })).filter(t => t.text || t.extra);
+const SIDE = ["Fields", "Controls"];
+const NAV = GUIDE.map(([group]) => group).filter(group => !SIDE.includes(group));
+const guideGroups = $("guideGroups");
+const guideNav = $("guideNav");
+const guideBox = $("guideBox");
+$("guideLevels").innerHTML = Object.keys(LEVELS).map(n => `<button class="icon" data-level="${n}" title="Level ${n}" aria-label="Level ${n}">${n}</button>`).join("");
+let shown = [];
+let listed = [];
+let termButtons = [];
+let group = NAV[0];
+let term = 0;
+const pick = i => {
+  term = Math.max(0, Math.min(i, listed.length - 1));
+  const { label, text, extra } = listed[term];
+  guideBox.innerHTML = `<h3>${label}</h3><div class="body">${extra}${text && `<p>${text}</p>`}</div>`;
+  guideBox.scrollTop = 0;
+  termButtons.forEach((button, n) => button.setAttribute("aria-current", n === term));
+  termButtons[term].scrollIntoView({ block: "nearest" });
+};
+const showGroup = (name, keep) => {
+  group = name;
+  listed = shown.filter(t => t.group === name);
+  const present = new Set(shown.map(t => t.group));
+  guideGroups.innerHTML = NAV.filter(g => present.has(g)).map(g => `<button data-group="${g}" aria-current="${g === name}">${g}</button>`).join("");
+  document.querySelectorAll("#guideTools [data-group]").forEach(button => {
+    button.hidden = !present.has(button.dataset.group);
+    button.setAttribute("aria-current", button.dataset.group === name);
+  });
+  guideNav.innerHTML = listed.map((t, i) => `<button data-i="${i}">${t.label}</button>`).join("");
+  termButtons = [...guideNav.querySelectorAll("button")];
+  pick(Math.max(0, listed.findIndex(t => t.label === keep)));
+};
+const showGuide = (n, name = group, keep = listed[term]?.label) => {
+  shown = termsFor(n);
+  document.querySelectorAll("#guideLevels button").forEach(button => button.setAttribute("aria-current", +button.dataset.level === n));
+  showGroup(shown.some(t => t.group === name) ? name : shown[0].group, keep);
+};
+const toGroup = event => {
+  const button = event.target.closest("[data-group]");
+  if (button) showGroup(button.dataset.group);
+};
+guideGroups.addEventListener("click", toGroup);
+$("guideTools").addEventListener("click", toGroup);
+guideNav.addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (button) pick(+button.dataset.i);
+});
+$("guideLevels").addEventListener("click", event => {
+  const button = event.target.closest("button");
+  if (button) showGuide(+button.dataset.level);
+});
+showGuide(level);
+$("guideOpen").addEventListener("click", () => { showGuide(level, NAV[0], null); openModal("guide"); });
+modals.forEach(modal => modal.addEventListener("click", event => {
+  if (event.target === modal || event.target.closest(".close")) closeModals();
+}));
+document.addEventListener("keydown", event => {
+  if (event.key === "Enter" && event.target.matches(".stack.use")) event.target.click();
+  const step = { ArrowUp: -1, ArrowDown: 1 }[event.key];
+  if (step && !$("guide").hidden) {
+    event.preventDefault();
+    pick(term + step);
+  }
+  if (event.key !== "Escape") return;
+  const idle = $("settings").hidden && modals.every(modal => modal.hidden);
+  setMenu(false);
+  closeModals();
+  if (idle && (sel || pending)) { unselect(); render(); }
+});
+$("restart").addEventListener("click", () => start(level));
+$("again").addEventListener("click", newGame);
+$("next").addEventListener("click", () => (upNext() ? start(upNext(), s.over.sum) : start(1)));
+
+newGame();
+</script>
+</body>
+</html>
