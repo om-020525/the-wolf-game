@@ -6,16 +6,35 @@
 <title>The Wolf Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Orbitron:wght@500;700&family=MedievalSharp&family=Caveat:wght@500&family=Courier+Prime&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#10100f;--panel:#1a1917;--line:#37332c;--beige:#e4d9c6;--sand:#b9ab93;--muted:#8a8070;--ink:#3b3329;--good:#8fe0a4;--info:#8bbcf5;--bad:#f59a9a;--void:#10100f;--lit:#e4d9c6;--flash:#3a352c;--veil:rgba(10,10,9,.92);--pile1:#bdb29d;--pile2:#8d836f;--scout:#e6c229;--cw:100px}
+:root{--bg:#10100f;--panel:#1a1917;--line:#37332c;--beige:#e4d9c6;--sand:#b9ab93;--muted:#8a8070;--ink:#3b3329;--good:#8fe0a4;--info:#8bbcf5;--bad:#f59a9a;--void:#10100f;--lit:#e4d9c6;--flash:#3a352c;--veil:rgba(10,10,9,.92);--pile1:#bdb29d;--pile2:#8d836f;--scout:#e6c229;--cw:100px;--red:#e5483f}
 :root[data-theme=sharp]{--bg:#000;--panel:#000;--line:#6e6e6e;--beige:#fff;--sand:#e6e6e6;--muted:#a8a8a8;--ink:#000;--good:#00e676;--info:#0a84ff;--bad:#ff1744;--flash:#2b2b2b;--veil:rgba(0,0,0,.94);--void:#000;--lit:#fff;--pile1:#c8c8c8;--pile2:#808080;--scout:#ffe600}
-*{box-sizing:border-box}
+body.light{--bg:#e0cca9;--panel:#e8dbbd;--line:#c2ae83;--beige:#3b3329;--sand:#6b5f4d;--muted:#8a7a60;--ink:#e4d9c6;--good:#2e7d4f;--info:#1f5fae;--bad:#b3261e;--void:#e8dbbd;--lit:#3b3329;--flash:#d6c398;--veil:rgba(224,204,169,.94);--pile1:#8d836f;--pile2:#6b5f4d;--scout:#a67c00;--red:#a8231b}
+:root[data-theme=sharp] body.light{--bg:#fff;--panel:#fff;--line:#8a8a8a;--beige:#000;--sand:#1a1a1a;--muted:#555;--ink:#fff;--good:#00873a;--info:#0a5fd6;--bad:#d0001f;--void:#fff;--lit:#000;--flash:#e2e2e2;--veil:rgba(255,255,255,.94);--pile1:#808080;--pile2:#404040;--scout:#b38f00}
+body.light .card{--beige:#e8dbbd;--ink:#3b3329;--void:#3b3329;--lit:#e4d9c6}
+body.light .face:not(.inverse){box-shadow:inset 0 0 0 1px var(--ink)}
+body.light .choices button{--beige:#e4d9c6;--sand:#b9ab93;--muted:#8a8070;--good:#8fe0a4;--info:#8bbcf5;--bad:#f59a9a;--bg:#3b3329;background-color:var(--bg);color:var(--beige)}
+body.light .choices button:hover:not(:disabled){background-color:var(--beige);color:var(--bg)}
+body.light .redacted{--beige:#e4d9c6;--void:#3b3329;--line:#b9ab93;background:var(--void)}
+:root[data-theme=sharp] body.light .redacted{--beige:#fff;--void:#000}
+body.light .choices button.cure{color:var(--good)}
+body.light .choices button.cure:hover:not(:disabled){background-color:color-mix(in srgb,var(--good) 18%,var(--bg));color:var(--good)}
+:root[data-theme=sharp] body.light .choices button{--beige:#fff;--sand:#e6e6e6;--muted:#a8a8a8;--good:#00e676;--info:#0a84ff;--bad:#ff1744;--bg:#000}
+:root[data-theme=sharp] body.light .card{--beige:#fff;--ink:#000;--void:#000;--lit:#fff}
+*{box-sizing:border-box;scrollbar-width:none}
+::-webkit-scrollbar{display:none}
+.rail{position:fixed;z-index:40;width:14px;display:none;cursor:pointer;touch-action:none}
+.rail::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted)}
+.rail i{position:absolute;left:50%;width:11px;height:11px;margin:-6px 0 0 -6px;background:#e4d9c6;border:1px solid #000;transform:rotate(45deg)}
+#guideNav,#storyText,#log{padding-right:20px}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--beige);font:14px/1.4 Montserrat,system-ui,sans-serif;user-select:none;-webkit-user-select:none}
 body.selectable{user-select:text;-webkit-user-select:text}
 h1,h2,.label,figcaption,.count,button b,#over h2,#over b{font-family:Orbitron,Montserrat,sans-serif}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:14px 24px;border-bottom:1px solid var(--line)}
+header{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:14px 24px;border-bottom:1px solid var(--line)}
 h1{flex:1;margin:0;font-size:20px;letter-spacing:.18em;font-weight:700}
+#timer{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:700 18px Orbitron,Montserrat,sans-serif;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+#timer[hidden]{display:none}
 button{font:inherit;cursor:pointer;color:var(--beige);background:transparent;border:1px solid var(--sand);padding:8px 14px;text-align:left}
 button:hover:not(:disabled){background:var(--beige);color:var(--bg)}
 button:disabled{opacity:.3;cursor:not-allowed}
@@ -41,9 +60,8 @@ main{display:grid;grid-template-columns:1fr 280px;gap:20px;padding:20px 24px}
 .multi .card{box-shadow:4px 4px 0 -1px var(--pile1),4px 4px 0 0 var(--void),8px 8px 0 -1px var(--pile2),8px 8px 0 0 var(--void)}
 .count{position:absolute;top:-8px;right:-8px;background:var(--bg);border:1px solid var(--sand);color:var(--beige);font-size:10px;padding:2px 6px;border-radius:10px}
 figcaption{margin-top:8px;font-size:9px;letter-spacing:.12em;color:var(--sand);text-align:center}
-.controls{background:var(--panel);border:1px solid var(--line);padding:14px}
+.controls,.group{background:var(--panel);border:1px solid var(--line);padding:14px}
 .controls h2{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0 0 12px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
-.controls h2 #scoutName{white-space:nowrap}
 .controls h2 #alphaBlind{justify-self:center;color:var(--beige);white-space:nowrap;text-align:center}
 .controls h2 #alphaBlind.hot{color:var(--bad)}
 .controls h2 button{justify-self:end;font:14px/1.4 Montserrat,system-ui,sans-serif;letter-spacing:normal;text-align:center}
@@ -59,11 +77,13 @@ figcaption{margin-top:8px;font-size:9px;letter-spacing:.12em;color:var(--sand);t
 .choices button.red::after,.choices button.green::after{content:"";position:absolute;inset:4px;border:2px dashed var(--bad);pointer-events:none}
 .choices button.green::after{border-color:var(--good)}
 .choices button:focus-visible{outline:1px dashed var(--ring,var(--beige));outline-offset:3px}
-.choices.solo{display:flex;justify-content:center}
-.choices button.cure{min-width:320px;padding:28px 48px;text-align:center;color:var(--good);border-color:var(--good)}
+.choices.solo{display:flex;min-height:var(--h)}
+.choices button.cure,.controls h2 #scoutName{--w:2px;--c:linear-gradient(currentColor,currentColor);background:var(--c) 0 0/var(--arm) var(--w),var(--c) 0 0/var(--w) var(--arm),var(--c) 100% 0/var(--arm) var(--w),var(--c) 100% 0/var(--w) var(--arm),var(--c) 0 100%/var(--arm) var(--w),var(--c) 0 100%/var(--w) var(--arm),var(--c) 100% 100%/var(--arm) var(--w),var(--c) 100% 100%/var(--w) var(--arm);background-repeat:no-repeat}
+.choices button.cure{--ring:var(--good);flex:1;align-items:center;justify-content:center;padding:0;text-align:center;color:var(--good);border:0}
+.controls h2 #scoutName{--w:1px;--arm:7px;justify-self:start;padding:6px 12px}
 .choices button.cure b{margin:0;font-size:18px;letter-spacing:.14em}
 .choices button.cure span{display:none}
-.choices button.cure:hover:not(:disabled){background:var(--good);color:var(--bg)}
+.choices button.cure:hover:not(:disabled){background-color:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good)}
 .choices button[aria-pressed=true]{background:var(--beige);color:var(--bg)}
 .redacted{display:flex;align-items:center;border:1px solid var(--line)}
 .redacted span{width:100%;padding:7px 0;background:var(--beige);color:var(--void);font:700 10px Orbitron,Montserrat,sans-serif;letter-spacing:.3em;text-align:center}
@@ -89,19 +109,26 @@ button.icon[aria-expanded=true]{background:var(--beige);color:var(--bg)}
 #settings{position:absolute;right:0;top:calc(100% + 8px);z-index:5;min-width:210px;background:var(--panel);border:1px solid var(--sand);padding:14px 16px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
 #settings[hidden]{display:none}
 #settings h2{margin:0 0 12px;font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:500}
-button.item{width:100%;margin-bottom:14px;border-color:var(--line);letter-spacing:.08em}
-.level{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+button.item,.actions summary{width:100%;border:1px solid var(--line);letter-spacing:.08em}
+button.item{margin-bottom:14px}
+.actions{margin-bottom:14px}
+.actions summary{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;list-style:none}
+.actions[open] summary{margin-bottom:14px}
+.actions summary::-webkit-details-marker{display:none}
+.actions summary::after{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+.actions[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.actions summary:hover{background:var(--beige);color:var(--bg)}.level{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 #settings .level h2{margin:0}
 #levels{display:flex;gap:6px}
 #levels button{padding:4px 12px;text-align:center;border-color:var(--line);letter-spacing:.08em}
 #levels button.on{background:var(--beige);border-color:var(--beige);color:var(--bg)}
-.modal{position:fixed;inset:0;z-index:10;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:24px}
+.modal{position:fixed;inset:0;z-index:22;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:24px}
 .modal[hidden]{display:none}
 .modal .panel{max-height:100%;overflow:auto;background:var(--panel);border:1px solid var(--sand);padding:20px 24px}
 .modal .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
 .modal h2{margin:0;font-size:12px;letter-spacing:.2em;color:var(--muted);font-weight:500}
 #guide{padding:0;background:var(--bg)}
-#guide .panel{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"bar bar" "groups box" "list box";gap:0 24px;width:100%;height:100%;padding:20px 24px;border:0;overflow:hidden}
+#guide .panel{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"bar bar" "groups box" "list box";gap:0 24px;width:100%;height:100%;padding:14px 24px 20px;border:0;overflow:hidden}
 #guide .bar{grid-area:bar}
 #guideTools,#guideLevels{display:flex;gap:8px}
 #guideLevels button{font:600 14px Orbitron,Montserrat,sans-serif}
@@ -118,6 +145,11 @@ button.item{width:100%;margin-bottom:14px;border-color:var(--line);letter-spacin
 #guideBox p{flex:1 1 260px;max-width:560px;margin:0;color:var(--sand);font-size:15px;white-space:pre-line}
 #guideBox .label{min-height:2.6em;display:grid;place-items:center}
 .gallery{--cw:150px;display:grid;grid-template-columns:repeat(auto-fill,var(--cw));gap:20px;width:100%}
+#guideBox.story .body{flex-direction:column;gap:16px}
+#guideBox.story h4{margin:0;font:400 30px MedievalSharp,Orbitron,serif;letter-spacing:.02em;color:var(--red)}
+#guideBox.story p{flex:none;max-width:680px;color:var(--sand);font:500 23px/1.45 Caveat,cursive}
+.gallery [data-term]{cursor:pointer}
+.gallery [data-term]:hover,.gallery [data-term]:focus-visible{outline:2px solid var(--info);outline-offset:6px}
 .portrait{--cw:220px}
 @media(max-width:700px){#guide .panel{grid-template-columns:1fr;grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"bar" "groups" "list" "box";gap:12px}#guide .bar{margin-bottom:0}#guideGroups,#guideNav{flex-direction:row;flex-wrap:wrap}#guideGroups{margin:0;padding:0;border:0}#guideNav{max-height:34vh}#guideBox{padding:16px}.gallery{--cw:110px;gap:14px}.portrait{--cw:160px}}
 .toggles{display:flex;flex-direction:column;gap:12px}
@@ -140,7 +172,7 @@ aside h2{margin:0 0 10px;font-size:11px;letter-spacing:.2em;color:var(--muted);f
 aside ul{list-style:none;margin:0;padding:0;font-size:12px;color:var(--sand)}
 aside li{padding:6px 0;border-bottom:1px solid var(--line)}
 aside li:first-child{color:var(--beige)}
-#log{max-height:calc(100vh - 160px);overflow-y:auto}
+#log{max-height:calc(100vh - 160px);overflow-y:auto;white-space:pre-wrap;font-family:"Courier Prime","Courier New",monospace}
 #over .panel{display:flex;flex-direction:column;align-items:center;gap:16px;padding:0;background:none;border:0;overflow:visible;text-align:center}
 #over .close{position:fixed;top:72px;right:16px}
 #over #overScore{position:fixed;top:72px;left:16px;text-align:left}
@@ -154,7 +186,36 @@ aside li:first-child{color:var(--beige)}
 #over.lost h2{color:var(--bad)}
 main:has(aside[hidden]){grid-template-columns:1fr}
 @media(max-width:900px){main{grid-template-columns:1fr}.row{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.controls h2{letter-spacing:.06em;gap:4px}}
+@media(max-width:560px){main{padding:12px}.controls,.group{padding:10px}.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.controls h2{letter-spacing:.06em;gap:4px}}
+#levelTag{align-self:center;margin-right:4px;font:700 12px Orbitron,Montserrat,sans-serif;letter-spacing:.2em;color:var(--sand)}
+body.campaign #settings .level,body.campaign #guideLevels{display:none}
+.page{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;background:var(--paper);color:var(--ink);overflow:auto}
+.page,body.paged .menu>button{--paper:#e0cca9;--ink:#3b3329;--red:#a8231b;--good:#2e7d4f;--bad:#b3261e;--sand:#6b5f4d}
+body:not(.light) #storyPage,body.paged:not(.light):not(.onhome) .menu>button{--paper:var(--panel);--ink:var(--beige);--red:#e5483f;--good:#8fe0a4;--bad:#f59a9a;--sand:#b9ab93}
+body:not(.light) #storyText{color:var(--sand)}
+body:not(.light) #storyPage .storybox,body:not(.light) #storyPage button,body.paged:not(.light):not(.onhome) .menu>button{border-color:var(--sand)}
+body.paged .menu{z-index:21;margin-right:-15px}
+body.paged #levelTag,body.paged #restart{display:none}
+#homeArt .l-ink{stroke:var(--ink)}
+#homeArt .p-ink{fill:var(--ink)}
+#homeArt .l-beige{stroke:var(--paper)}
+#homeArt .p-beige{fill:var(--paper)}
+.page[hidden]{display:none}
+.page button,body.paged .menu>button{color:var(--ink);border-color:var(--ink);text-align:center;letter-spacing:.08em}
+body.paged .menu>button{background:var(--paper)}
+.page button:hover:not(:disabled),body.paged .menu>button:hover:not(:disabled),body.paged .menu>button[aria-expanded=true]{background:var(--ink);color:var(--paper)}
+#homeArt{height:min(46vh,480px);width:auto;max-width:90vw}
+#homeTitle{margin:0;font:400 clamp(36px,6vw,60px) MedievalSharp,serif;letter-spacing:.02em}
+.homeMenu{display:flex;flex-direction:column;gap:10px;width:min(280px,80vw)}
+.homeMenu button{width:100%}
+body:has(.page:not([hidden])){overflow:hidden}
+#storyPage{padding:28px}
+.storybox{display:flex;flex-direction:column;width:100%;height:100%;padding:28px 36px 20px;border:1px solid var(--ink);overflow:hidden}
+.storyhead{display:flex;flex-direction:column;gap:2px;margin-bottom:18px;font:500 12px Orbitron,Montserrat,sans-serif;letter-spacing:.2em;color:var(--sand)}
+#storyTitle{margin:0 0 18px;text-align:center;font:400 40px MedievalSharp,Orbitron,serif;color:var(--red)}
+#storyText{flex:1;min-height:0;overflow-y:auto;margin:0 auto;width:100%;max-width:760px;text-align:left;font:500 24px/1.45 Caveat,cursive;white-space:pre-line}
+.storyfoot{display:flex;justify-content:flex-end;padding-top:16px}
+.storyfoot button{min-width:140px}
 </style>
 </head>
 <body>
@@ -504,22 +565,32 @@ main:has(aside[hidden]){grid-template-columns:1fr}
 </svg>
 <header>
 <h1>THE WOLF GAME</h1>
+<time id="timer">00:00</time>
 <div class="menu">
+<span id="levelTag"></span>
+<button id="restart">Restart</button>
+<button id="homeBtn" class="icon" title="Home" aria-label="Home"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>
+<button id="guideOpen" class="icon" title="Guide" aria-label="Guide"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7"/></svg></button>
 <button id="fullscreen" class="icon" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
 <button id="gear" class="icon" aria-label="Settings" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-<div id="settings" hidden><div class="level"><h2>LEVEL</h2><div id="levels"></div></div><button id="guideOpen" class="item">Guide</button><h2>SECONDARY ACTIONS</h2><div id="toggles" class="toggles"></div><h2 id="tertiaryTitle">TERTIARY ACTIONS</h2><div id="tertiaryToggles" class="toggles"></div><div id="viewToggles" class="toggles"></div><h2>THEME</h2><div id="themeToggles" class="toggles"></div></div>
+<div id="settings" hidden><div class="level"><h2>LEVEL</h2><div id="levels"></div></div><details class="actions"><summary>Action list</summary><h2>SECONDARY ACTIONS</h2><div id="toggles" class="toggles"></div><h2 id="tertiaryTitle">TERTIARY ACTIONS</h2><div id="tertiaryToggles" class="toggles"></div></details><h2>DISPLAY</h2><div id="viewToggles" class="toggles"></div><h2>THEME</h2><div id="themeToggles" class="toggles"></div><div class="toggles"><label><input type="checkbox" id="darkMode">Dark mode</label></div></div>
 </div>
-<button id="restart">New game</button>
 </header>
 <main>
 <div class="board">
-<div class="row" id="players"></div>
-<div class="row" id="field"></div>
+<div class="row group" id="players"></div>
+<div class="row group" id="field"></div>
 <section class="controls"><h2 id="phase"><span id="scoutName"></span><span id="alphaBlind"></span><button id="undo"></button></h2><div class="choices" id="choices"></div></section></div>
 <aside id="logPanel"><h2>LOG</h2><ul id="log"></ul></aside>
 </main>
-<div id="guide" class="modal" hidden><div class="panel"><div class="bar"><h2>GUIDE</h2><div id="guideTools"><div id="guideLevels"></div><button class="icon" data-group="Fields" title="Fields" aria-label="Fields"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/></svg></button><button class="icon" data-group="Controls" title="Controls" aria-label="Controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h9M16 6h5M3 12h3M10 12h11M3 18h11M18 18h3"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg></button><button class="icon close" aria-label="Close">×</button></div></div><nav id="guideGroups"></nav><nav id="guideNav"></nav><section id="guideBox"></section></div></div>
+<div id="guide" class="modal" hidden><div class="panel"><div class="bar"><h2>GUIDE</h2><div id="guideTools"><div id="guideLevels"></div><button class="icon close" aria-label="Close">×</button></div></div><nav id="guideGroups"></nav><nav id="guideNav"></nav><section id="guideBox"></section></div></div>
 <div id="over" class="modal" hidden><div class="panel"><button class="icon close" aria-label="Close">×</button><h2 id="overTitle"></h2><p id="overMsg"></p><p id="overScore" hidden><b></b><small>THIS LEVEL</small><small id="overStats"></small></p><button id="again">Play again</button><button id="next"></button></div></div>
+<div id="homePage" class="page" hidden>
+<svg id="homeArt" xmlns="http://www.w3.org/2000/svg" viewBox="-51.5 1.2 1139.7 710.5" stroke-linecap="round" stroke-linejoin="round"><path d="M182.5 74.2L175.5 115.7M175.5 115.7L198.9 96.8M198.9 96.8L210.3 113M210.3 113L226.1 159.6M226.1 159.6L231.6 188.3M231.6 188.3L201.4 184.3M201.4 184.3L167.5 190.2M167.5 190.2L167.7 164.7M167.7 164.7L187.7 161.1M187.7 161.1L212 172.7M201.4 184.3L212 172.7M212 172.7L212 172.7M212 172.7L226.1 159.6M172.8 163.5L178 149.7M178 149.7L178 149.7M178 149.7L182.2 161.9M197.4 164.9L208.6 152.4M208.6 152.4L209 170.3M202.8 133.5L192.2 103.1M175.5 115.7L184.4 139.4M184.4 139.4L192.2 103.1M202.8 133.5L210.3 113M186.7 129L201.9 159M201.9 159L197.6 150.8M197.6 150.8L190.3 162.3M182.5 74.2L201.7 66.2M201.7 66.2L201.7 66.2M201.7 66.2L239.4 92M239.4 92L276 119.8M276 119.8L295.4 152.7M295.4 152.7L300.8 171.1M300.8 171.1L241.1 119.6M241.1 119.6L266.6 159.7M266.6 159.7L266.4 201.1M266.4 201.1L293 243.6M293 243.6L290.9 223.7M290.9 223.7L323 255.4M323 255.4L312.9 201.1M312.9 201.1L342.2 229.2M342.2 229.2L327.3 176.8M327.3 176.8L295.4 152.7M179.7 92.9L212.8 85.4M212.8 85.4L212.7 74.1M201.7 66.2L198.4 87.7M212.8 85.4L241.3 104.5M241.3 104.5L262.5 138M282.1 130.1L301.3 132.1M301.3 132.1L313.1 150.9M288.9 140.9L309.6 145.3M302 135L293.1 141.6M276 119.8L317.3 123.2M317.3 123.2L387.1 194.8M387.1 194.8L363.4 188.3M363.4 188.3L390.7 216.1M390.7 216.1L363.9 208.1M363.9 208.1L389 241.1M389 241.1L348.5 243.6M348.5 243.6L387.8 297.8M387.8 297.8L353.3 289.6M353.3 289.6L362.7 320.7M362.7 320.7L329.7 299M329.7 299L339.6 333.3M339.6 333.3L286.8 282.9M286.8 282.9L298.8 304L298 345.1L297 393.9M297 393.9L261.8 352.7M261.8 352.7L246.7 376M246.7 376L241.4 307.4M241.4 307.4L234.1 331M234.1 331L219 280.4M219 280.4L208.2 291.9M208.2 291.9L209.1 230.7M209.1 230.7L167.5 190.2M201.4 184.3L242.2 248.7M242.2 248.7L240.7 287.3M240.7 287.3L251.4 277.3M251.4 277.3L272.3 312.2M272.3 312.2L286.8 282.9" class="l-ink" fill="none" stroke-width="2"/><path d="M282.1 130.1L301.3 132.1L302 135L293.1 141.6L288.9 140.9Z" class="p-ink"/><path d="M192.2 103.1L186.7 129L201.9 159L208.6 152.4L209 170.3L212 172.7L226.1 159.6L210.3 113L202.8 133.5Z" class="p-ink"/><path d="M182.5 74.2L179.7 92.9L198.4 87.7L201.7 66.2Z" class="p-ink"/><path d="M349.3 155.6L396.8 157.8M396.8 157.8L443.4 155.4M443.4 155.4L398 199.8M387.1 194.8L398 199.8L449.7 223.2M443.4 155.4L388.5 178.4M388.5 178.4L372.9 179.8M449.7 223.2L434.2 224.6M434.2 224.6L482.6 258.4M482.6 258.4L452.9 253.8M452.9 253.8L476.1 281.1M476.1 281.1L512 294.6M512 294.6L487.7 298.9M487.7 298.9L501.5 306.2M261.8 352.7L249.5 424.6M249.5 424.6L336 580.6M336 580.6L323.9 482.7M323.9 482.7L371.3 547.6M371.3 547.6L369.1 526.3M369.1 526.3L430.8 581.6M261.8 352.7L326.2 457.3M326.2 457.3L364.1 471.3M364.1 471.3L380.8 444.4M380.8 444.4L408.5 447.8M297 393.9L313.6 368.1M313.6 368.1L344.4 435.2M344.4 435.2L361.5 370.4M361.5 370.4L415.3 368.8M415.3 368.8L404 333.2M404 333.2L450.3 355.9M450.3 355.9L429 309.3M384.2 270.6L443.8 292.2M453.7 286.9L423.7 267.5M423.7 267.5L443.8 292.2M251.4 277.3L270.4 327.2M270.4 327.2L298 345.1M332.6 552.3L378.9 627.4M378.9 627.4L388.4 608.4M388.4 608.4L403.9 626.6M403.9 626.6L401.7 594.8M401.7 594.8L425.6 619.8" class="l-ink" fill="none" stroke-width="2"/><path d="M468.9 59.2L590 48.6M590 48.6L609.4 64.8M609.4 64.8L712.6 71.9M712.6 71.9L726.8 83.7L732 88.9M732 88.9L767.4 88.6M767.4 88.6L803.2 98.5M678 109.9L724.2 109.4M724.2 109.4L740.7 100.8M678 109.9L670.6 102.4M670.6 102.3L622.6 106.2M622.6 106.2L614.4 87.1M614.4 87.1L521.7 84.1M521.7 84.1L521.7 84.1M521.7 84.1L521.7 84.1M521.7 84.1L521.7 84.1M521.7 84.1L521.7 84.1M842.7 135.1L856.5 100.5M856.5 100.5L850 73L836 51.1M836 51.1L819.4 33.3L796.5 25.4M796.5 25.4L764.6 32.2L736.3 48.9" class="l-ink" fill="none" stroke-width="0.8"/><path d="M579.7 250.3L560.9 252.2L556.3 252.6M556.3 252.6L523.8 266.5M523.8 266.5L542.6 231.4M542.6 231.4L541.6 198M541.6 198L554.8 166.9M554.8 166.9L607.9 144.5M607.9 144.5L649.6 158.7M649.6 158.7L670.3 206.7M579.7 250.3L603.1 225.8M603.1 225.8L623.1 212.3M623.1 212.3L650.3 204.8M650.3 204.8L670.3 206.7M603.1 225.8L641.2 218.7M641.2 218.7L659.2 215.3M659.2 215.3L677.4 215.1M677.4 215.1L686.3 218.5M686.3 218.5L670.3 206.7M686.3 218.5L673.8 229.7M673.8 229.7L668.3 232.9M668.3 232.9L658.5 235M523.8 266.5L543.7 268M543.7 268L558.8 267.1M558.8 267.1L566.9 264.9M659.2 215.3L660.4 222.5M660.4 222.5L657.4 226.4M657.4 226.4L658.5 235M658.5 235L659.5 242.5M659.5 242.5L652.2 273.6M652.2 273.6L651.7 292.1M651.7 292.1L639.1 295.1L625.4 298.3M625.4 298.3L617.2 294.8L595.4 285.4M595.4 285.4L583.2 276.6M583.2 276.6L578.6 257.8M560.9 252.2L566.9 264.9M566.9 264.9L568 273.4L569.6 290.4M568 273.4L564.7 276.1L555.6 283.6M555.6 283.6L546.9 295M569.6 290.4L594.6 305.8M594.6 305.8L606.2 304.2L633.4 300.2M639.1 295.1L613.2 318.7M613.2 318.7L595.5 321.8M595.5 321.8L566.6 298.5M566.6 298.5L564.7 276.1M606.2 304.2L617.2 294.8" class="l-ink" fill="none" stroke-width="2"/><path d="M617.2 294.8L625.4 298.3L639.1 295.1L633.4 300.2L606.2 304.2Z" class="p-ink"/><path d="M659.2 215.3L660.4 222.5L657.4 226.4L658.5 235L668.3 232.9L673.8 229.7L686.3 218.5L677.4 215.1Z" class="p-ink"/><path d="M523.8 266.5L543.7 268L558.8 267.1L566.9 264.9L560.9 252.2L556.3 252.6Z" class="p-ink"/><path d="M603.1 225.8L608.7 224.7L603.3 237.1L599.1 239.5L591.9 239.9L592.5 243.8L591.5 257.1L586.6 256.4L584.2 246.2Z" class="p-ink"/><path d="M618.5 223.8L637.2 228.8M645.2 225.5L654 255M654 255L650.2 253.9M650.2 253.9L646.3 256.5M646.3 256.5L643.5 253.9M643.5 253.9L639.7 254.1M639.7 254.1L637.4 256.1M646.7 228.1L652.4 222.5M652.4 222.5L657.9 220.3M657.9 220.3L659.2 220.3" class="l-ink" fill="none" stroke-width="2"/><path d="M650.8 224.9L654.1 223.7M654.1 223.7L658.1 224.2M658.1 224.2L654.2 230.7M654.2 230.7L648 230.7" class="l-ink" fill="none" stroke-width="0.8"/><path d="M650.8 224.9L650.5 228.6L654.2 230.7L657.4 226.4L658.1 224.2L654.1 223.7Z" class="p-ink"/><path d="M615.5 268.6L618.3 268.8L619.8 273.1L630.5 263.5L642.6 257.7L649 257.6L653.5 261.3L660.1 266.5L635.9 267.6L618.1 276.2Z" class="p-ink"/><path d="M636.9 275.6L642.9 273.2L652.2 273.6L651.7 275.5L646.2 274.9Z" class="p-ink"/><path d="M613.9 232.8L623.1 228.7M623.1 228.7L631.6 227.8M631.6 227.8L637.2 228.8M637.2 228.8L631.1 234.2M631.1 234.2L623.9 235.4M623.9 235.4L613.9 232.8M650.8 224.9L646.7 228.1M646.7 228.1L648 230.7" class="l-ink" fill="none" stroke-width="0.8"/><path d="M623.1 228.7L621.2 231.6L623.9 235.4L631.1 234.2L632.9 230.5L631.6 227.8Z" class="p-ink"/><path d="M546.9 295L473.5 313.6M473.5 313.6L460.1 333.3M460.1 333.3L535.3 313.6M535.3 313.6L546.9 295M535.3 313.6L539.5 370.6M539.5 370.6L560.3 358.1M571.9 349.7L595.5 321.8M556.2 284.3L561.1 319.1M561.1 319.1L571.9 349.7M571.9 349.7L621.2 445.3M546.9 295L549.1 322.9M549.1 322.9L560.3 358.1M560.3 358.1L609.2 453.8M652.2 273.6L669 298.3M669 298.3L675 300.1M675 300.1L744.2 310.9M744.2 310.9L744 327.8M744 327.8L679.1 316.8M679.1 316.8L675 300.1M679.1 316.8L665.2 372.8M665.2 372.8L661.6 367.4M647.2 357.4L613.2 318.7M660.2 285.5L647.2 357.4M647.2 357.4L635.2 436.8M669 298.3L661.6 367.4M661.6 367.4L650.8 426.6M464 332.9L502.9 417.9M502.9 417.9L505.3 481M739.3 327.4L718.5 358.5M718.5 358.5L705 404.3M705 404.2L705.5 430.6M745.1 324.5L753.7 327.9M753.7 327.9L774 401.6M466 338.1L400.1 466.2" class="l-ink" fill="none" stroke-width="2"/><path d="M502.9 417.9L433 428.1M433 428.1L400.1 466.2" class="l-ink" fill="none" stroke-width="0.8"/><path d="M400.1 466.2L385.5 512.6M385.5 512.6L443.8 599.6M443.8 599.6L448.1 587.4M448.1 587.4L465.4 550.4M465.4 550.4L498.7 543.4M498.7 543.4L461.7 490.5M461.7 490.5L463 485.1" class="l-ink" fill="none" stroke-width="2"/><path d="M463 485.1L438.4 464.5M400.1 466.2L487.3 454.3" class="l-ink" fill="none" stroke-width="0.8"/><path d="M502.9 417.9L481.1 474.5M481.1 474.5L463 485.1" class="l-ink" fill="none" stroke-width="2"/><path d="M460 388.9L502.9 417.9M390 519.1L408.8 484.6M408.8 484.6L461.7 490.5" class="l-ink" fill="none" stroke-width="0.8"/><path d="M417.7 560.2L441.5 517.3M441.5 517.3L474.4 508.2M441.5 517.3L465.4 550.4M520.3 551.2L498.7 543.4M498.7 543.4L465.7 560.6M465.7 560.6L454.9 585.9M454.9 585.9L462.8 601.6M462.8 601.6L487.2 622.1M487.2 622.1L501.2 612.4M501.2 612.4L480.9 598.2M480.9 598.2L471 586.4M501.2 612.4L511.3 605M511.3 605L494.2 590.7M494.2 590.7L481.2 577.7M511.3 605L520.9 597M520.9 597L501.7 579.4M501.7 579.4L492.7 569M520.9 579.1L535.2 574.1M535.2 574.1L535.7 583M504.3 558.2L520.9 579.4M520.9 597L535.7 583M533.5 528.7L525.1 546.9M525.1 546.9L642.3 483.7M509.5 564.1L525.1 546.8M504.3 558.2L512.5 560.6M532.6 543.8L524.4 559.4M524.4 559.4L511.3 567.3M520.9 579.4L532.1 567.1M532.1 567.1L660 497.5M531 574.9L535.6 571.2M535.6 571.2L550 563.5M548.8 558.4L550 563.5M550 563.5L546.7 579.2M546.7 579.2L536 587M536 587L532.5 585.6M528 590.8L535.2 594.1M535.2 594.1L552 584.7M552 584.7L574 544.4M546.7 579.2L567 548M462.8 601.6L401.6 633.1M401.6 633.1L387.3 660.9M387.3 660.9L411.8 693M411.8 693L442.4 686.7M442.4 686.7L445.1 668.5M445.1 668.5L483.2 618.9M394.6 668.5L439.4 646.7M439.4 646.7L406.7 685.1M443.8 599.6L459.2 595.2M454.9 585.9L450.9 583.5" class="l-ink" fill="none" stroke-width="2"/><path d="M443.8 599.6L448.1 587.4L450.9 583.5L454.9 585.9L459.2 595.2Z" class="p-ink"/><path d="M758.8 437.1L710.8 559.9M710.8 559.9L720.7 562.8M720.7 562.8L769.3 434.3M710.8 559.9L710.8 559.9M710.8 559.9L708.8 559L702.4 569.6M702.4 569.6L704.4 570.8M704.4 570.8L710.8 559.9M704.4 570.8L715 573.5M715 573.5L720.7 562.8M702.4 569.6L686.1 596.5M686.1 596.5L649.6 614.9M649.6 614.9L571.7 638.3M571.7 638.3L512.5 645.6M512.5 645.6L460.7 647.4M457.7 653.1L516 658.8M516 658.8L581.4 655.6M581.4 655.6L692.1 603.2M692.1 603.2L715 573.5M653.7 460.1L639.2 466.9M639.2 466.9L642.3 483.7M642.3 483.7L660 497.5M660 497.5L674.3 509.6M674.3 509.6L715.5 490M715.5 490L718.3 458.5M718.3 458.5L706.6 461.6M706.6 461.6L690.3 442.6M690.3 442.6L653.7 460.1M671.1 492.1L659.5 480.5M659.5 480.5L653.7 460.1M682.1 485.5L671.3 469.5M671.3 469.5L665.5 454.2M695 478.1L683.4 461.6M683.4 461.6L678.4 448.9M695.7 435.3L690.3 442.6M674.1 449.7L679.3 435.5M679.3 435.5L697.2 424.1M697.2 424.1L709.2 434.2M533.5 528.7L569.3 511.3M569.3 511.3L575.3 501.9M575.3 501.9L639.3 470.3M691.8 444.2L795.7 390.9M697.1 450.2L795.7 398.9M795.5 387.6L795.7 398.9M795.7 398.9L803.6 415.2M803.6 415.2L814.4 407.9M814.4 407.9L805.3 395M805.3 395L805.7 383.7M805.7 383.7L795.5 387.6M718.3 458.5L802.5 412.9M806 386L884.6 345.2M805.4 392.5L886.5 351.7M813 405.7L891.6 363.6M883.8 339.8L884.6 345.2M884.6 345.2L886.5 351.7M886.5 351.7L893.5 366.8M893.5 366.8L905.6 359.5M905.6 359.5L897.5 345.8M897.5 345.8L897.8 334.2M897.8 334.2L901 336.8M907.6 351.9L905.6 359.5M883.8 339.8L897.8 334.2M805.7 383.7L808.4 384.5M814.4 407.9L815.5 404.6M897.5 345.8L983.7 299.7M983.7 299.7L981.5 296.5L898 338.7M903.5 354.1L985.2 304.1M983.7 299.7L985.2 304.1M705 404.3L713.7 391.8M713.7 391.8L763.5 361.3M718.3 458.5L745.3 470.3" class="l-ink" fill="none" stroke-width="2"/><path d="M754.7 473.2L777.1 479M777.1 479L803.2 493.7" class="l-ink" fill="none" stroke-width="0.8"/><path d="M780.5 425.3L803.2 493.7M803.2 493.7L808.5 508.5M808.5 508.5L790.4 557.4M790.4 557.4L729.6 541.7M718.8 538.5L689.3 530.2M689.3 530.2L677.3 508M683.3 505.8L694.2 526.5M694.2 526.5L709.6 520.3M709.6 520.3L715.5 490M688.1 503.4L710.8 512.6" class="l-ink" fill="none" stroke-width="2"/><path d="M756.4 467.5L786 450.1M770.6 477.3L799.3 531.1" class="l-ink" fill="none" stroke-width="0.8"/><path d="M709.6 520.3L723.9 526.3M733.7 529.6L745.2 534.4M736 542.9L745.2 534.4M745.2 534.4L745.2 534.4M745.2 534.4L747.3 492.1M743.5 476L742 469.4M590.8 328.5L587.4 378.3M583 404.4L574.9 504.4M598.9 400.7L607.8 401.4M607.8 401.4L607.4 411.2M607.4 411.2L603.5 411.1M598.5 366.9L609 367M609 367L608.5 377.7M608.5 377.7L598.4 377.3M598.4 377.3L598.5 366.9M599.7 333.4L599.2 343.7M599.2 343.7L609.7 344M609.7 344L610.2 333.6M610.2 333.6L599.7 333.4M602.2 457.9L609.2 453.8M609.2 453.8L614.7 447.8M614.7 447.8L621.2 445.3M621.2 445.3L635.2 436.8M635.2 436.8L643.3 428.8M643.3 428.8L650.8 426.6M650.8 426.6L666.6 417.6M602.2 457.9L619.9 458.1M619.9 458.1L659.9 431.9M659.9 431.9L666.6 417.6M602.2 457.9L617.1 481.2M619.9 458.1L630.8 474.7M659.9 431.9L674.1 449.7M666.6 417.6L679.3 435.5M650.8 426.6L659.9 431.9M609.2 453.8L619.9 458.1" class="l-ink" fill="none" stroke-width="2"/><path d="M481.4 328.5L523.9 425.4M523.9 425.4L517.5 436.1M517.5 436.1L575.3 494.7" class="l-ink" fill="none" stroke-width="0.8"/><path d="M704.6 534.7L703.6 552.5M703.6 552.5L708.8 559M715 573.5L760.4 657.7M760.4 657.7L766.4 675.2M673.5 577.2L681.9 598.3M686.1 606.7L705.7 670.1M582.1 563.4L599.5 628.7M602.2 645.4L607.1 692.8M607.1 692.8L705.7 670.1M705.7 670.1L766.4 675.2M573 559.6L571.7 638.3M569.2 655.6L566.9 701.9M528 590.8L512.5 645.6M508.9 658.3L494.4 701.2M443.7 676.1L447.1 695.9M447.1 695.9L494.4 701.2M494.4 701.2L566.9 701.9M566.9 701.9L607.1 692.8M577.6 543.1L577.3 563.6M577.3 563.6L615.1 562.8M615.1 562.8L616 527.7M616 527.7L603.3 528.5M615.7 531.2L642.4 531.4M615.1 559L644 559.5M644 559.5L640.5 514.4M640.5 514.4L669.4 506.1M640.5 514.4L660 525.2M660 525.2L661.9 579M644 559.5L644.6 573M644.6 573L661.9 579M661.9 579L698.1 572.2M698.1 572.2L698.4 533.1M660 525.2L682.7 518.6M660.4 537.7L689.3 530.2M641.1 515.4L656.3 526.9M656.3 526.9L660.4 537.7M595.2 539.2L594.6 555.5M567.8 556.9L577.3 558.7M505.5 539.7L525.1 546.9M505.5 539.7L508 515.1M508 515.1L505.3 481M508 515.1L541.4 525.2" class="l-ink" fill="none" stroke-width="2"/><path d="M42.1 18.3L19.6 231.8M19.6 231.8L3.1 183.8M3.1 183.8L15.1 259.5M15.1 259.5L6.9 514.9M42.1 18.3L48 97M48 97L135.7 2.6M135.7 2.6L44.3 129.2M44.3 129.2L48.8 254.2M48.8 254.2L80.3 219M80.3 219L76.5 126.2M76.5 126.2L87.7 183.1M87.7 183.1L103.5 121.7M103.5 121.7L102 150.1M102 150.1L153.7 96.2M153.7 96.2L95.2 167.4M95.2 167.4L84.8 241.5M84.8 241.5L52.5 302.2M52.5 302.2L48 517.9M63 305.2L88.5 342.6M88.5 342.6L101.2 397.3M101.2 397.3L87 484.9M63 305.2L86.2 326.9M86.2 326.9L78.8 276.7M78.8 276.7L87.7 304.4M87.7 304.4L106.5 282.7M106.5 282.7L90.7 320.2M90.7 320.2L95.2 342.6M95.2 342.6L105.7 365.1M105.7 365.1L117 324.7M117 324.7L119.2 216M119.2 216L125.9 270.7M125.9 270.7L150.7 238.5M150.7 238.5L127.4 290.9M127.4 290.9L124.4 331.4M124.4 331.4L166.4 286.5M166.4 286.5L146.2 313.4M146.2 313.4L179.1 308.2M179.1 308.2L145.4 320.2M145.4 320.2L120.7 346.4M120.7 346.4L118.1 460.4M869 253.5L914.6 284.2M914.6 284.2L908.6 228M908.6 228L913.1 164.4M913.1 164.4L916.9 221.3M916.9 221.3L952.8 171.1M952.8 171.1L921.4 241.5M921.4 241.5L934.6 320M869 253.5L915.3 303.3M915.3 303.3L918.7 328.4M920.3 343.9L928.6 403.7L930 414.1M930 414.1L928.6 496.1M938 333.9L940.2 350.5M940.2 350.5L953.6 323.6M954.9 309.2L958.8 267M958.8 267L950.9 227.3M950.9 227.3L964.2 261M964.2 261L973.6 241M973.6 241L969.3 260.8M969.3 260.8L963.1 273.2M963.1 273.2L967.1 303.2M968.5 314L945.5 376.1M945.5 376.1L965.8 477.1M51.1 379.6L62.9 371.6M62.9 371.6L91.7 394.8M91.7 394.8L99.5 393.6M120.6 384.8L133.7 379.2M143.2 376.4L194.5 345.7M138.3 356.1L126.2 410.4M126.2 410.4L132 409.3M132 409.3L118.7 436.4M138.3 356.1L150.1 410.4M150.1 410.4L144.5 408M144.5 408L157 439.2M157 439.2L153.3 439.5M153.3 439.5L156.8 454.5M71.3 391.5L63.8 423.5M63.8 423.5L67 425.6M67 425.6L60.4 443.1M71.3 391.5L78.7 425.4M78.7 425.4L74.9 424.9M74.9 424.9L77.5 448.8M194.5 345.7L173.6 408.6M194.5 345.7L220.7 371M220.7 371L233.6 407.6M220.7 371L230.2 381.2M230.2 381.2L255.6 392M761 350.9L807.7 325.3M807.7 325.3L842 366.1M807.7 325.3L801 375.5M853.3 384.2L864.5 402.2M860.1 393.4L902.5 370M902.5 370L928.6 403.7M882.8 388L876 436.4M876 436.4L880.8 434.7M880.8 434.7L868.6 475.4M868.6 475.4L873.3 475.7M873.3 475.7L867.6 498.1M882.8 388L895.7 436.4M895.7 436.4L888.9 434.4M888.9 434.4L902.8 472.7M902.8 472.7L896 496M909.9 408.6L902.8 446.9M902.8 446.9L902.8 446.9M906.1 448L902.8 472.7M902.8 446.9L906.1 448M909.9 408.6L916 447.2M916 447.2L912.7 447.2M912.7 447.2L924.5 496.3M50 439.9L82.4 451.2M82.4 451.2L90.7 520.7M87 484.9L139.1 444.1M139.1 444.1L228.2 495.6M228.2 495.6L240.9 517.1M240.9 517.1L302.5 520.7M88.8 504.8L127.7 500.7M127.7 500.7L145.4 507M145.4 507L164 541.3M149.6 514.4L170.6 498.7M170.6 498.7L188.5 506.3M188.5 506.3L194.7 498.4M194.7 498.4L225.9 508.8M225.9 508.8L236.6 541M-0.7 516.5L6.9 514.9M6.9 514.9L48 517.9M48 517.9L90.7 520.7M90.7 520.7L140.9 528.4M140.9 528.4L150.3 559.2M81.7 520.1L150.3 559.2M150.3 559.2L172.7 578.9M172.7 578.9L132.2 593M132.2 593L53.4 570M53.4 570L0.1 588.9M-0.4 625.9L63.5 640.6M63.5 640.6L116.2 623.2M116.2 623.2L132.7 624.1L162.8 625.8M168.5 645.8L223.9 635M223.9 635L285.3 656.7M285.3 656.7L338 640.3M338 640.3L390 656.4M132.2 593L132.7 624.1M172.7 578.9L193.4 623.3M181.7 597.6L217.8 597.9M217.8 597.9L230.8 606.1M230.8 606.1L298.1 604.2M298.1 604.2L316.4 617.7M316.4 617.7L371.6 616.7M148.8 552.4L191.2 552.8M191.2 552.8L215.3 570.9M215.3 570.9L280.7 571.6M145.3 542L258.3 540.9M258.3 541L259.7 551.4M259.7 551.4L275.6 552.8M275.6 552.8L285.5 564.9M285.5 564.9L326.6 564.2M810 501.2L898.4 514.4M804.7 519.8L842.9 518.6M842.9 518.6L862 526.3M822 534.7L862 526.3M862 526.3L906.2 525.7M803.7 606.3L795.6 583.2M795.6 583.2L829.1 565.7M829.1 565.7L878.7 550.2M878.7 550.2L908.8 563.5L948 580.7M948 580.7L1020.8 591.4M878.7 550.2L881.7 574.1M881.7 574.1L842.8 620M881.7 574.1L899.6 588.4M803.7 606.3L842.8 620M842.8 620L875.2 619.7L979.9 666.4M875.2 619.7L899.6 588.4M899.6 588.4L928.3 578.9M928.3 578.9L979.9 666.4M928.3 578.9L948 580.7M1013.2 501.3L970.1 522.1M970.1 522.1L948 580.7M1002.9 457.7L938.4 491.7M938.4 491.7L908.8 563.5M849.2 505.6L877.7 495.4M877.7 495.4L906.8 497.8M906.8 497.8L936.5 496.1M938.4 491.7L976 501.2M976 501.2L1023.4 487.6M1002.9 457.7L1024.5 466.2M976 501.2L975.2 519.1M800.3 484.6L805.9 456.1M805.9 456.1L816.7 501.7M815.1 493.8L823 475.9M823 475.9L818.6 475.6M818.6 475.6L832.8 420M832.8 420L842 476.5M842 476.5L837.8 476.7M837.8 476.7L843.6 505.9M258.2 517.3L265.5 479.8M265.5 479.8L271.2 518.5M218 489.5L227.4 468.3M227.4 468.3L221.9 468M221.9 468L233.4 423.8M233.4 423.8L245.2 469.2M245.2 469.2L240.1 468.6M240.1 468.6L254.3 517.6M203.5 480.4L210.1 439.3M210.1 439.3L218 489.5M182.9 469.2L188 452.3M188 452.3L184.7 451.1M184.7 451.1L193.2 415.1M193.2 415.1L202.6 453.2M202.6 453.2L197.1 452M197.1 452L204.7 473.5M156.8 454.5L163.2 428.1M163.2 428.1L158.4 426.3M158.4 426.3L168.7 383.9M168.7 383.9L175.6 427.2M175.6 427.2L171.4 429.3M171.4 429.3L181.4 466.8M794.7 136L847.5 135.1M847.5 135.1L885.3 162M885.3 162L868.5 172.9M868.5 172.9L819.8 178.8M819.8 178.8L815.3 187.4M815.3 187.4L760.9 179.5M760.9 179.5L711.5 184.3M711.5 184.3L695.7 170.4M695.7 170.4L676.4 167.9M676.4 167.9L667.2 146.9M667.2 146.9L680.6 132.6M680.6 132.6L725 134.2M725 134.2L758.6 125.1M758.6 125.1L794.7 136M730 106.7L743.8 128.9M963.6 463.2L976.9 428.5M976.9 428.5L970.7 428.5M970.7 428.5L988.8 366.6M988.8 366.6L999.3 430.4M999.3 430.4L994 429.4M994 429.4L999.6 459.2M931.7 111L987.4 180.5M987.4 180.5L992.6 291.4M992.6 291.4L1002.9 457.7M931.7 111L989.8 164.8M989.8 164.8L998.3 99.1M998.3 99.1L1000.2 228.1M1000.2 228.1L1012.6 201.9M1012.6 201.9L1001.2 245.2M1001.2 245.2L1024.5 466.2" class="l-ink" fill="none" stroke-width="0.8"/><path d="M698.4 553.2L703.6 552.5M505.5 539.7L504.8 545.5M542.6 231.4L564.3 223.8M564.3 223.8L563.5 194.9M563.5 194.9L574.9 159.9M602.1 148.8L637.3 171.2M637.3 171.2L649.2 198.5M649.2 198.5L670.3 206.7M564.3 223.8L596.6 218.8M596.6 218.8L625.3 205M625.3 205L649.2 198.5M554.1 196.8L550.5 199.9M550.5 199.9L550.3 204.5M550.3 204.5L554.6 208.9M554.6 208.9L558 206M558 206L559 200.4M559 200.4L554.1 196.8M585 198L580.9 201.4M580.9 201.4L580.9 204.5M580.9 204.5L584.5 206.7M584.5 206.7L589.8 205.3M589.8 205.3L590.8 200.7M590.8 200.7L585 198M610.1 189.8L607.4 193.4M607.4 193.4L608.6 196.6M608.6 196.6L613.2 197.3M613.2 197.3L616.1 195.8M616.1 195.8L615.6 191.3M615.6 191.3L610.1 189.8M631.1 183.1L629.4 187.2M629.4 187.2L630.6 190.1M630.6 190.1L632.8 190.5M632.8 190.5L636.6 189.6M636.6 189.6L636.9 185.5M636.9 185.5L634.9 183.3M634.9 183.3L631.1 183.1M654.7 185L652.3 187.9M652.3 187.9L653.3 190.1M653.3 190.1L655.9 191.3M655.9 191.3L658.1 189.3M658.1 189.3L658.1 186.9M658.1 186.9L654.7 185" class="l-ink" fill="none" stroke-width="2"/><path d="M683.3 505.8L688.1 503.4L710.8 512.6L709.6 520.3L694.2 526.5Z" class="p-ink"/><path d="M530.1 574.7L531.7 568.7M531.7 568.7L548.7 561.3" class="l-ink" fill="none" stroke-width="2"/><path d="M-0.4 625.9L-25.3 633.9L-36.6 609.1M67.7 676.2L120.3 664.3M120.3 664.3L169 668.8L221.5 672.5M221.5 672.5L290.9 681.6M290.9 681.6L348.6 686.2L406.7 685.1M766.4 675.2L820 689.7L879.5 700.1M879.5 700.1L967.1 710.3M967.1 710.3L1043.7 691.9M1047.4 674.6L1086.8 639.9M1086.8 639.9L1061.2 601M1061.2 601L1020.8 591.4M1013.2 501.3L1024.1 504.9L1056.1 515.6L1071.4 535.7M1071.4 535.7L1074.4 621M1023.4 487.6L1055 497.1M1055 497.1L1056.1 515.6M1024.5 466.2L1047.3 478.8M1047.3 478.8L1055 497.1M-0.7 516.5L-50.1 546.8M-50.1 546.8L-28.4 584.4M-28.4 584.4L0.1 588.9M-50.1 546.8L-36.6 609.1M-28.4 584.4L-25.3 633.9M0.1 588.9L-0.4 625.9M53.4 570L63.5 640.6M1013.2 501.3L1020.8 591.4M1024.1 504.9L1023.4 487.6M1056.1 515.6L1061.2 601M979.9 666.4L1086.8 639.9M959 443.1L967.1 453.6M720.9 583.9L762.8 577.9M762.8 577.9L795.6 583.2M747.7 635.4L821.9 651.6M821.9 651.6L880 647.3M880 647.3L961.4 688.7M961.4 688.7L1047.4 674.6M1043.7 691.9L1047.4 674.6M1043.7 691.9L1086.8 639.9M-25.3 633.9L-12 665.6M-25.3 633.9L-9.8 651.4M-9.8 651.4L8.7 638.9M8.7 638.9L63 656M63 656L118.7 636.5M118.7 636.5L168.5 645.8M193.4 623.3L193.4 623.3M193.4 623.3L162.8 625.8M961.4 688.7L967.1 710.3M880 647.3L879.5 700.1M821.9 651.6L820 689.7M-9.8 651.4L-12 665.6M-12 665.6L-12 665.6M-12 665.6L14 660.1M14 660.1L67.7 676.2M8.7 638.9L14 660.1M63 656L67.7 676.2M118.7 636.5L120.3 664.3M168.5 645.8L169 668.8M221.5 672.5L223.9 635M290.9 681.6L285.3 656.7M348.6 686.2L338 640.3M740.7 100.8L803.2 98.5M468.9 59.2L473.5 73.8M473.5 73.8L521.7 84.1M736.3 48.9L726.8 83.7M476.7 93.3L529.5 92.5M529.5 92.5L552.5 107.7M552.5 107.7L528.8 122.7M528.8 122.7L496.4 132.2M496.4 132.2L470.5 131.5M470.5 131.5L428.1 127M428.1 127L397.6 134.6M397.6 134.6L377.7 127.7M377.7 127.7L358.4 125.2M358.4 125.2L349.2 104.2M349.2 104.2L382 97.2M382 97.2L407 91.5M407 91.5L440.6 82.4M440.6 82.4L476.7 93.3" class="l-ink" fill="none" stroke-width="0.8"/></svg>
+<h2 id="homeTitle">The Wolf Game</h2>
+<nav id="homeMenu" class="homeMenu"><button id="newGameBtn">New game</button><button id="continueBtn">Continue</button><button id="levelsBtn">Levels</button></nav>
+</div>
+<div id="storyPage" class="page" hidden><section class="storybox"><div class="storyhead"><span id="storyLevel"></span><span id="storyKind"></span></div><h3 id="storyTitle"></h3><p id="storyText"></p><div class="storyfoot"><button id="storyGo"></button></div></section></div>
 <script>
 const TYPES = {
   v: { name: "VILLAGER", short: "Villager", art: "villager" },
@@ -547,15 +618,15 @@ const BLUE = SECONDARY.filter(key => key !== "pray");
 const BASE = ["search", ...SECONDARY.slice(0, 7)];
 const LEVELS = {
   1: { actions: BASE, parties: SOLO, close: { v: 12, w: 4 }, retaliate: true, win: "All 4 werewolves are discarded." },
-  2: { actions: [...BASE, "hunt", "heal", "poison"], parties: SOLO, close: { v: 4, w: 8, d: 1, h: 2, x: 1 }, retaliate: false, penalty: ["x", "d"], win: "All 8 werewolves are discarded." },
+  2: { actions: [...BASE, "hunt", "heal", "poison"], parties: SOLO, close: { v: 4, w: 8, d: 1, h: 2, x: 1 }, retaliate: false, bonus: ["h", "x", "d"], ordered: true, win: "All 8 werewolves are discarded." },
   3: { actions: [...BASE, "hunt", ...TERTIARY], parties: [{ x: 1 }, { d: 1 }, { v: 1 }, { v: 1 }], shuffle: true, close: { w: 8, o: 1, s: 1, d: 1, h: 1 }, seen: { a: 1 }, retaliate: true, alpha: true, tally: true, win: "Every werewolf is cured into a villager." }
 };
 const CHARACTERS = [
   { key: "villager", name: "VILLAGER", art: "villager", info: "A villager in your party pays for every wolf attack.\nVillagers on the field are attacked before the scout.\nBlind and Trap each cost one villager." },
   { key: "werewolf", name: "WEREWOLF", art: "wolf", info: "A face up werewolf attacks at the start of every turn.\n13|When you flip a werewolf face up, it attacks at once (Retaliate).\n2|Wolves do not retaliate in this level.\n1|Blind turns it face down. Trap removes it.\n23|Blind turns it face down. Trap or Hunt removes it." },
-  { key: "alpha", name: "ALPHA WEREWOLF", art: "alpha", info: "The Alpha is a 9th wolf in Level 3. It lies face down in Field Seen.\nIt attacks at the start and at the end of every turn.\nOnce it is face up, it stays face up. Each Blind adds 1 to its blind count.\nAt 8 Blinds it is blind and stops attacking.\nA blind Alpha brings one werewolf from the Discard back, face up in Field Open, at the start of every turn.\nYou can never trap, hunt or poison it. Only a seer can cure it, after it is blind.\nThe seer is discarded by that cure. The Game Moderator replaces the Alpha, face up.\nWolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves." },
+  { key: "alpha", name: "ALPHA WEREWOLF", art: "alpha", info: "The Alpha is a 9th wolf in Level 3. It lies face down in Field Seen.\nIt attacks at the start and at the end of every turn.\nOnce it is face up, it stays face up. Each Blind adds 1 to its blind count.\nAt 8 Blinds it is blind and stops attacking.\nA blind Alpha brings one werewolf from the Discard back, face up in Field Open, at the start of every turn.\nYou can never trap, hunt or poison it. Only a seer can cure it, after it is blind.\nThe seer stays in the party. The Game Moderator replaces the Alpha, face up.\nWolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves." },
   { key: "witch", name: "VILLAGER WITCH", art: "witch", info: "A witch in your party can use Poison once per game and Heal once per game.\n3|A healed witch gets both back.\nIt is a villager too: it pays costs and counts in the score." },
-  { key: "seer", name: "VILLAGER SEER", art: "seer", info: "A seer in your party can use Cure.\nThe seer is discarded when it cures, a dead werewolf or the Alpha." },
+  { key: "seer", name: "VILLAGER SEER", art: "seer", info: "A seer in your party can use Cure.\nThe seer is discarded when it cures a dead werewolf. It stays when it cures the Alpha." },
   { key: "doctor", name: "VILLAGER DOCTOR", art: "doctor", info: "A doctor in your party can use Heal every turn.\nHeal uses the doctor first and keeps the witch Heal." },
   { key: "drunk", name: "VILLAGER DRUNK", art: "drunk", info: "A wolf attacks a drunk before any other villager.\nA wolf attack on a drunk always fails.\nA drunk cannot pay for Blind.\nWhen a drunk pays for Trap, Field Open and Field Seen are turned face down and shuffled into Field Close. The Alpha stays where it is.\nWhile a drunk is open, only the drunk can be rescued." },
   { key: "hunter", name: "VILLAGER HUNTER", art: "hunter", info: "A hunter in your party can use Hunt.\nHunt discards a face up wolf and the hunter." },
@@ -571,7 +642,7 @@ let level = saved in LEVELS ? +saved : 1;
 const cfg = () => LEVELS[level];
 
 const inLevel = key => cfg().actions.includes(key);
-const VIEW_TOGGLES = [["log", "Log"], ["select", "Text select"]];
+const VIEW_TOGGLES = [["log", "Log"], ["timer", "Timer"], ["select", "Text select"]];
 const STORE = "wolfGameActions";
 const disabled = new Set(JSON.parse(localStorage.getItem(STORE) || '["log"]'));
 const saveDisabled = () => localStorage.setItem(STORE, JSON.stringify([...disabled]));
@@ -579,10 +650,11 @@ if (disabled.delete("bide")) {
   disabled.add("pray");
   saveDisabled();
 }
-const SELECT_INIT = "wolfGameTextSelect";
-if (!localStorage.getItem(SELECT_INIT)) {
-  disabled.add("select");
-  localStorage.setItem(SELECT_INIT, "1");
+const VIEW_INIT = "wolfGameViewDefaults";
+if (!localStorage.getItem(VIEW_INIT)) {
+  ["log", "select"].forEach(key => disabled.add(key));
+  disabled.delete("timer");
+  localStorage.setItem(VIEW_INIT, "1");
   saveDisabled();
 }
 const isOn = key => !disabled.has(key);
@@ -591,16 +663,37 @@ let carry = 0, s, items = [], prev = {}, sel = null, pending = null, lookup = nu
 
 const shuffled = list => list.map(item => [Math.random(), item]).sort(([a], [b]) => a - b).map(([, item]) => item);
 
+const ARRIVAL = { h: (w, h) => w <= (h ? 6 : 3), x: (w, h) => w <= 3 + h, d: (w, h) => w <= 4 + h };
+
+const orderedDeck = counts => {
+  const memo = new Map();
+  const options = left => KEYS.filter(t => left[t] && (!ARRIVAL[t] || ARRIVAL[t](counts.w - 1 - left.w, counts.h - left.h)));
+  const ways = left => {
+    const key = KEYS.map(t => left[t]).join();
+    if (!memo.has(key)) memo.set(key, KEYS.every(t => !left[t]) ? 1 : options(left).reduce((n, t) => n + ways({ ...left, [t]: left[t] - 1 }), 0));
+    return memo.get(key);
+  };
+  let left = { ...counts, w: counts.w - 1 };
+  const order = [];
+  while (options(left).length) {
+    let roll = Math.random() * ways(left);
+    const t = options(left).find(t => (roll -= ways({ ...left, [t]: left[t] - 1 })) < 0);
+    left = { ...left, [t]: left[t] - 1 };
+    order.push(t);
+  }
+  return ["w", ...order.reverse()];
+};
+
 const fresh = () => ({
   turn: 0, count: 1, over: null, log: [], poison: 0, poisonType: "w", blind: 0, cured: 0, dead: 0, used: { poison: false, heal: false },
-  deck: shuffled(Object.entries(cfg().close).flatMap(([t, n]) => Array(n).fill(t))),
+  deck: cfg().ordered ? orderedDeck(cfg().close) : shuffled(Object.entries(cfg().close).flatMap(([t, n]) => Array(n).fill(t))),
   z: { ...Object.fromEntries((cfg().shuffle ? shuffled(cfg().parties) : cfg().parties).map((counts, i) => ["p" + i, zone(counts)])), open: zone(), close: zone(cfg().close), seen: zone(cfg().seen), discard: zone() }
 });
 
 const me = () => "p" + s.turn;
 const hand = () => s.z[me()];
 const total = z => KEYS.reduce((n, t) => n + z[t], 0);
-const humans = z => HUMANS.reduce((n, t) => n + z[t], 0);
+const humans = (z, types = HUMANS) => types.reduce((n, t) => n + z[t], 0);
 const first = (z, order) => order.find(t => z[t] > 0);
 const blind = () => s.blind >= ALPHA_BLINDS;
 const alphaHits = () => (s.z.open.a > 0 && !blind() ? 1 : 0);
@@ -610,7 +703,17 @@ const alive = () => Object.entries(s.z).reduce((n, [key, z]) => n + (key === "di
 const crowning = () => cfg().alpha && s.ring.green.cure && blind() && hand().s > 0 && s.z.open.a > 0;
 const searchable = () => total(s.z.close) + total(s.z.seen) > 0;
 const convert = (zn, from, to, n = 1) => { s.z[zn][from] -= n; s.z[zn][to] += n; };
-const say = msg => s.log.unshift(`Turn ${s.count} · Scout ${s.turn + 1} · ${msg}`);
+const two = (n, width = 2) => String(n).padStart(width, "0");
+const clock = { start: 0, end: 0 };
+const tick = () => {
+  clock.end = s.over ? clock.end || Date.now() : 0;
+  const sec = clock.start ? Math.floor(((clock.end || Date.now()) - clock.start) / 1000) : 0;
+  $("timer").textContent = `${two(Math.floor(sec / 60))}:${two(sec % 60)}`;
+};
+const say = msg => s.log.unshift(`Turn ${two(s.count, 3)} · Scout ${two(s.turn + 1)} · ${msg}`);
+const note = (move, ...parts) => say([move.padEnd(10), ...parts].join(" : ").replace(/(\s:\s*)+$/, ""));
+const cardName = t => TYPES[t].short.padEnd(8);
+const fieldName = zone => `Field ${(zone[0].toUpperCase() + zone.slice(1)).padEnd(7)}`;
 const move = (from, to, t, n = 1) => {
   s.z[from][t] -= n; s.z[to][t] += n;
   if (from === "close") s.deck.pop();
@@ -619,10 +722,10 @@ const move = (from, to, t, n = 1) => {
 const draw = () => s.deck.at(-1);
 const name = t => TYPES[t].name.toLowerCase();
 const noun = t => TYPES[t].short.toLowerCase();
-const survivors = () => Object.entries(s.z).reduce((n, [key, z]) => n + (key === "discard" ? 0 : humans(z)), 0);
+const survivors = (types = HUMANS) => Object.entries(s.z).reduce((n, [key, z]) => n + (key === "discard" ? 0 : humans(z, types)), 0);
 
 const tally = () => `Dead wolves ${s.dead} · Cured wolves ${s.cured} · Alpha cured`;
-const score = () => survivors() - (cfg().penalty ?? []).reduce((n, t) => n + s.z.discard[t], 0);
+const score = () => survivors() + survivors(cfg().bonus ?? []);
 const upNext = () => (LEVELS[level + 1] ? level + 1 : 0);
 const victory = msg => {
   const points = score();
@@ -633,13 +736,12 @@ const win = () => {
 };
 
 const crown = () => {
-  pay("s");
   convert("open", "a", "m");
   const n = s.z.open.w + s.z.close.w + s.z.seen.w;
   ["open", "close", "seen"].forEach(zn => convert(zn, "w", "v", s.z[zn].w));
   s.deck = s.deck.map(t => (t === "w" ? "v" : t));
   s.cured += n;
-  say(`Cure the Alpha Wolf: seer discarded, the game moderator replaced it, ${n} werewol${n === 1 ? "f" : "ves"} in Field Open, Field Close and Field Seen cured`);
+  note("Cure", "", cardName("a"), cardName("s"), "Game Moderator");
 };
 
 let chosen;
@@ -674,8 +776,8 @@ const damage = (k, source) => {
   }
   if (hits.length === k) return true;
   const unpaid = k - hits.length;
-  say(`${source}: no card left, scout ${s.turn + 1} is killed`);
-  s.over = { won: false, msg: `Scout ${s.turn + 1} cannot pay ${unpaid} villager${unpaid > 1 ? "s" : ""} from the hand (${source}).` };
+  say(`${source}: no card left, scout ${two(s.turn + 1)} is killed`);
+  s.over = { won: false, msg: `Scout ${two(s.turn + 1)} cannot pay ${unpaid} villager${unpaid > 1 ? "s" : ""} from the hand (${source}).` };
   return false;
 };
 const poisonDeath = () => {
@@ -684,13 +786,13 @@ const poisonDeath = () => {
   const from = s.z.open[t] ? "open" : "seen";
   if (!s.z[from][t]) return;
   move(from, "discard", t);
-  say(`Poison: ${noun(t)} died`);
+  note("Poison", "", cardName(t), "Died");
 };
 
-const revive = t => {
+const revive = (t, healer) => {
   move("discard", "seen", t);
   if (t === "x") s.used = { poison: false, heal: false };
-  say(`Heal: ${noun(t)} back in seen${t === "x" ? ", witch's skills restored" : ""}`);
+  note("Heal", "", cardName(t), cardName(healer), t === "x" ? "Skills Restored" : "");
 };
 
 const searchDone = () => {
@@ -701,7 +803,7 @@ const searchDone = () => {
 const skipSearch = () => {
   if (s.ring.red !== "search" || searchable()) return;
   searchDone();
-  say("Search skipped: no cards");
+  note("Search", "Skipped", "No cards");
 };
 
 const startTurn = () => {
@@ -728,7 +830,7 @@ const endTurn = () => {
 
 const search = (source, t = draw(), action = "Search") => {
   move(source, "open", t);
-  say(`${action} ${source}: ${name(t)}`);
+  note(action, fieldName(source), cardName(t));
   if (WOLF.includes(t) && cfg().retaliate) damage(1, "Retaliate");
 };
 
@@ -736,14 +838,14 @@ const scatter = () => {
   ["open", "seen"].forEach(zn => KEYS.forEach(t => t !== "a" && move(zn, "close", t, s.z[zn][t])));
   s.deck = shuffled(Object.entries(s.z.close).flatMap(([t, n]) => Array(n).fill(t)));
   s.poison = 0;
-  say("Drunk: Field Open and Field Seen turned face down and shuffled into Field Close");
+  note("Collateral Chaos", "Field Open and Field Seen turned face down and shuffled into Field Close");
 };
 
 const trap = (source, t = draw()) => {
   move(source, "discard", t);
   const paid = payer();
   pay(paid);
-  say(`Trap ${source}: ${name(t)} discarded`);
+  note("Trap", fieldName(source), cardName(t), cardName(paid));
   if (paid === "d") scatter();
 };
 
@@ -817,27 +919,28 @@ const choices = () => {
     entry("Search Close", random("Select a random face down card, from Field Close.\nPlace it face up, onto the field."), closeWhy, () => search("close"), undefined, "close", null, total(z.close)),
     ...by("seen", KEYS, seenLabel("Search"), n => `Select a face down ${n}, from Field Seen.\nPlace it face up, onto the field.`, () => "", noSeen, t => search("seen", t)),
     ...by("open", WOLF, t => `Blind${tag(t)}`, n => `Select a face up ${n}, from the field.\nPlace it face down, onto the field.\nDiscard a villager, from your party.`, t => (blindPayer() === undefined ? NEEDS : t === "a" && blind() ? "Alpha is already blind" : ""), noWolf, t => {
-      pay(blindPayer());
+      const paid = blindPayer();
+      pay(paid);
       if (t === "a") s.blind++; else move("open", "seen", t);
-      say(t === "a" ? `Blind: alpha werewolf ${s.blind}/${ALPHA_BLINDS}` : `Blind: ${noun(t)} hidden`);
+      note("Blind", "", cardName(t), cardName(paid), t === "a" ? `${s.blind}/${ALPHA_BLINDS}` : "");
     }, "blind"),
-    ...by("open", HUMANS, t => `Rescue${tag(t)}`, n => `Select a face up ${n}, from the field.\nAdd it, to your party.`, t => (z.open.d && t !== "d" ? "Drunk is open" : ""), noVillager, t => { move("open", me(), t); say(`Rescue: ${noun(t)} saved`); }, "rescue"),
+    ...by("open", HUMANS, t => `Rescue${tag(t)}`, n => `Select a face up ${n}, from the field.\nAdd it, to your party.`, t => (z.open.d && t !== "d" ? "Drunk is open" : ""), noVillager, t => { move("open", me(), t); note("Rescue", "", cardName(t)); }, "rescue"),
     entry("Pray", "Do nothing.", "", () => say(s.ring.red === "meditate" ? "Meditate" : "Pray"), "pray", "", null, 1),
     entry("Trap Close", random("Discard a random face down card, from the field.\nDiscard a villager, from your party."), pays || closeWhy, () => trap("close"), "trap", "close", null, total(z.close)),
     ...by("seen", KEYS, seenLabel("Trap"), n => `Discard a face down ${n}, from the field.\nDiscard a villager, from your party.`, t => pays || unlocked(t), noSeen, t => trap("seen", t), "trap"),
-    ...by(me(), HUMANS, t => `Deploy${tag(t)}`, n => `Select a ${n}, from your party.\nPlace it face up, onto the field.`, () => "", NEEDS, t => { move(me(), "open", t); say(`Deploy: ${noun(t)} to open`); }, "deploy"),
-    ...by("open", HUMANS, t => `Camouflage${tag(t)}`, n => `Select a face up ${n}, from the field.\nPlace it face down, onto the field.`, () => "", noVillager, t => { move("open", "seen", t); say(`Camouflage: ${noun(t)} hidden`); }, "camouflage"),
+    ...by(me(), HUMANS, t => `Deploy${tag(t)}`, n => `Select a ${n}, from your party.\nPlace it face up, onto the field.`, () => "", NEEDS, t => { move(me(), "open", t); note("Deploy", "", cardName(t)); }, "deploy"),
+    ...by("open", HUMANS, t => `Camouflage${tag(t)}`, n => `Select a face up ${n}, from the field.\nPlace it face down, onto the field.`, () => "", noVillager, t => { move("open", "seen", t); note("Camouflage", "", cardName(t)); }, "camouflage"),
     entry("Reprise Close", random("Search again."), closeWhy, () => search("close", draw(), "Reprise"), "reprise", "close", null, total(z.close)),
     ...by("seen", KEYS, seenLabel("Reprise"), n => `Search again for a known ${n}.`, () => "", noSeen, t => search("seen", t, "Reprise"), "reprise"),
     ...by("open", WOLF, t => `Hunt${tag(t)}`, n => `Discard a face up ${n}, from the field.\nDiscard the hunter, from your party.`, t => (hand().h > 0 ? unlocked(t) : "Needs a hunter in your party"), noWolf, t => {
-      move("open", "discard", t); pay("h"); if (s.poison && s.poisonType === t && !z.open[t]) s.poison = 0; say(`Hunt: ${noun(t)} discarded`);
+      move("open", "discard", t); pay("h"); if (s.poison && s.poisonType === t && !z.open[t]) s.poison = 0; note("Hunt", "", cardName(t), cardName("h"));
     }, "hunt"),
     ...by("open", WOLF, t => `Poison${tag(t)}`, n => `Select a face up ${n}, from the field.\nDiscard it, at the end of the next turn.`, t => (!witch ? "Needs a witch in your party" : s.used.poison ? "Poison already used" : unlocked(t)), noWolf, t => {
-      s.used.poison = true; s.poison = s.count + 1; s.poisonType = t; say(`Poison: ${noun(t)} poisoned`);
+      s.used.poison = true; s.poison = s.count + 1; s.poisonType = t; note("Poison", "", cardName(t), cardName("x"));
     }, "poison"),
-    ...by("discard", HUMANS, t => `Heal${tag(t)}`, n => `Remove a ${n}, from the discard.\nPlace it face down, onto the field.`, () => (doctor || witch ? (doctor || !s.used.heal ? "" : "Heal already used") : "Needs a doctor or a witch in your party"), "Nothing in Field Discard", t => { if (!doctor) s.used.heal = true; revive(t); }, "heal"),
+    ...by("discard", HUMANS, t => `Heal${tag(t)}`, n => `Remove a ${n}, from the discard.\nPlace it face down, onto the field.`, () => (doctor || witch ? (doctor || !s.used.heal ? "" : "Heal already used") : "Needs a doctor or a witch in your party"), "Nothing in Field Discard", t => { if (!doctor) s.used.heal = true; revive(t, doctor ? "o" : "x"); }, "heal"),
     entry("Cure: Dead Werewolf", CURE, needSeer || (z.discard.w > 0 ? "" : "No dead werewolf"), () => {
-      pay("s"); convert("discard", "w", "v"); s.cured++; say("Cure: dead werewolf became a dead villager in the discard, seer discarded");
+      pay("s"); convert("discard", "w", "v"); s.cured++; note("Cure", "", cardName("w"), cardName("s"), cardName("v"));
     }, "cure", "discard", "w", z.discard.w)
   ].map(arm)
     .filter(([, , , , group]) => !group || (inLevel(group) && isOn(group)));
@@ -902,7 +1005,7 @@ const dropTargets = (zone, type) => {
 };
 
 const unselect = () => { sel = pending = null; };
-const runItem = item => { snaps.push(JSON.stringify(s)); item[3](); unselect(); };
+const runItem = item => { clock.start ||= Date.now(); snaps.push(JSON.stringify(s)); item[3](); unselect(); };
 const choosePayer = item => (["trap", "blind"].includes(item[5].act) && payable(item[5].act).length > 1 ? (pending = item) : runItem(item));
 const direct = act => entries(act).every(item => item[5].deck === "");
 
@@ -925,7 +1028,7 @@ const render = () => {
   items = choices();
   if (s.over || (sel && !entries(sel).length)) unselect();
   lookup = pending ? new Map(payable(pending[5].act).map(t => [`${me()}:${t}`, pending])) : sel ? new Map(entries(sel).filter(item => item[2] && item[5].count > 0).flatMap(item => spots(item).map(key => [key, item]))) : null;
-  $("players").innerHTML = [0, 1, 2, 3].map(i => panel("p" + i, `SCOUT ${i + 1}`, faces("p" + i), i === s.turn)).join("");
+  $("players").innerHTML = [0, 1, 2, 3].map(i => panel("p" + i, `SCOUT ${two(i + 1)}`, faces("p" + i), i === s.turn)).join("");
   $("field").innerHTML = [
     panel("open", `FIELD OPEN${s.poison ? " · POISON" : ""}`, faces("open")),
     panel("close", "FIELD CLOSE", stack(back, total(z.close), "", "close")),
@@ -933,15 +1036,19 @@ const render = () => {
     panel("discard", "FIELD DISCARD", faces("discard"))
   ].join("");
   const alpha = cfg().alpha;
-  $("scoutName").textContent = `SCOUT ${s.turn + 1}${"\u00a0".repeat(6)}[ Round ${String(Math.ceil(s.count / 4)).padStart(2, "0")} ]`;
+  $("scoutName").textContent = `ROUND ${two(Math.ceil(s.count / 4))}`;
   $("alphaBlind").textContent = alpha ? `ALPHA BLIND ${s.blind}/${ALPHA_BLINDS}` : "";
   $("alphaBlind").title = alpha ? `Blinds on the Alpha. At ${ALPHA_BLINDS} it is blind: it stops attacking, revives a dead wolf each turn, and a seer can cure it.` : "";
   $("alphaBlind").className = blind() ? "" : "hot";
   $("undo").textContent = sel || pending ? "Back" : "Undo";
   $("undo").disabled = !sel && !pending && !snaps.length;
   const solo = !!crowning();
-  $("choices").classList.toggle("solo", solo);
-  $("choices").innerHTML = solo ? button('data-a="crown" class="cure"', false, "Cure the Alpha Wolf", "") : GRID.map(slot).join("");
+  const box = $("choices");
+  box.classList.toggle("solo", solo);
+  box.innerHTML = solo ? button('data-a="crown" class="cure"', false, "Cure the Alpha Wolf", "") : GRID.map(slot).join("");
+  if (!solo) box.style.cssText = `--h:${box.getBoundingClientRect().height}px;--arm:${box.firstElementChild.getBoundingClientRect().height / 2}px`;
+  tick();
+  $("timer").hidden = !isOn("timer");
   $("logPanel").hidden = !isOn("log");
   document.body.classList.toggle("selectable", isOn("select"));
   $("log").innerHTML = s.log.map(line => `<li>${line}</li>`).join("");
@@ -953,16 +1060,17 @@ const render = () => {
     $("overScore").hidden = !s.over.won;
     $("again").hidden = s.over.won;
     $("next").hidden = !s.over.won;
-    $("next").textContent = upNext() ? "Next level" : "New game";
+    $("next").textContent = upNext() ? "Next level" : campaign ? "Epilogue" : "Restart";
     $("overScore").firstChild.textContent = `Score: ${s.over.points}`;
     $("overStats").textContent = [`${upNext() ? "Total" : "Final total"} ${s.over.sum}`, s.over.tally].filter(Boolean).join("\n");
   }
 };
 
-const newGame = () => { s = fresh(); prev = {}; snaps = []; unselect(); startTurn(); render(); };
+const newGame = () => { s = fresh(); clock.start = clock.end = 0; prev = {}; snaps = []; unselect(); startTurn(); render(); };
 
 document.addEventListener("click", event => {
   const { target } = event;
+  if (target.closest(".page")) return;
   const control = target.closest("#choices button");
   const piece = target.closest("[data-zone]");
   if (target.closest("#undo")) {
@@ -1084,9 +1192,19 @@ $("themeToggles").addEventListener("change", event => {
 });
 applyTheme();
 
+const DARK_STORE = "wolfGameDarkMode";
+const applyDark = () => document.body.classList.toggle("light", !$("darkMode").checked);
+$("darkMode").checked = localStorage.getItem(DARK_STORE) !== "off";
+$("darkMode").addEventListener("change", event => {
+  localStorage.setItem(DARK_STORE, event.target.checked ? "on" : "off");
+  applyDark();
+});
+applyDark();
+
 $("levels").innerHTML = Object.keys(LEVELS).map(n => `<button data-level="${n}">${n}</button>`).join("");
 const syncLevel = () => {
   localStorage.setItem(LEVEL_STORE, level);
+  $("levelTag").textContent = `LEVEL ${level}`;
   const pairs = keys => keys.filter(inLevel).map(key => [key, ACTIONS[key][0]]);
   drawToggles("toggles", pairs(SECONDARY));
   drawToggles("tertiaryToggles", pairs(TERTIARY));
@@ -1107,6 +1225,7 @@ $("levels").addEventListener("click", event => {
   const button = event.target.closest("button");
   if (!button) return;
   start(+button.dataset.level);
+  showPage();
 });
 syncLevel();
 
@@ -1141,19 +1260,29 @@ const typeOf = Object.fromEntries(KEYS.map(t => [TYPES[t].art, t]));
 const characterMin = ({ art }) => (art === "moderator" ? debut(c => c.alpha) : typeOf[art] ? debut(holds(typeOf[art])) : 1);
 const actionMin = label => debut(c => c.actions.includes(label.split(" ")[0].toLowerCase()));
 const actionNames = (keys, n) => keys.filter(k => LEVELS[n].actions.includes(k)).map(titled).join(", ");
-const gallery = n => CHARACTERS.filter(c => characterMin(c) <= n).map(c => (c.note ? `<figure class="stack">${card(c)}<figcaption>${c.note}</figcaption></figure>` : card(c))).join("");
+const galleryItem = c => `<div data-term="${titled(c.name)}" tabindex="0" role="button">${card(c)}</div>`;
+const gallery = n => CHARACTERS.filter(c => characterMin(c) <= n).map(galleryItem).join("");
+const STORY = [
+  ["Level 01 Prologue", "The Night of the Howls", "The village of Lyca sleeps in the deep stillness of midnight. Its cobblestone lanes are empty, and the only sounds are the soft rustle of ivy against stone walls and the distant murmur of the river that winds past the mill. Chimneys have gone cold, and shutters are drawn tight against the night air. Nothing moves, and the whole valley seems to hold its breath.\n\nThen the bells of the chapel tower begin to ring, sharp and urgent, tearing through the stillness. One by one, lamps flicker to life in the windows. Doors creak open, and four villagers step out into the moonlight. Then all of the sudden they hear a long terrifying howl of a vicious beast, they rush towards the town square.\n\nUpon arrival they find four scouts who await them amid the growing commotion. Their faces are grim. A pack of wild beasts is closing in on Lyca from all four directions, and many innocents are caught in this chaos. Now the four villagers join forces with the scout to fend off these beasts."],
+  ["Level 01 Epilogue", "When Four Howls Stop", "When the bloodbath ended the scouts emerged victorious but the terrors of the night were far from over. The worst is now unfolding in front of them. As they watched in horror, those who had been trapping the four vicious beasts began to change. Hairs pushed through their skin like dark threads and their fingers curled into blackened claws. They became who they had fought. Within moments, the four captured wolves too had broken free of their cages, defeated and weak; the beasts retreated into the darkness. This victory is temporary. For the four howls we stopped today, eight will be back someday."],
+  ["Level 02 Prologue", "The Flasks and a Bottle", "The village of Lyca still bears the scars of that night. The cobblestones that once lay gray and quiet now carry a crimson stain, dark and dried in the cracks between the stones. Doorways stand empty, and the bell of the chapel tower hangs silent. Only a handful of villagers are left. A month has crept by since then, and tonight the sky has returned to its moonlight.\n\nThe village had sent word to a family of wolf hunters, the familia five as they are called. The villagers are restless. They pace behind barred doors and peer through cracked shutters, unable to sleep. Wondering who will be here first?\n\nThe familia five is nowhere to be seen but the soul sinking howl has returned. It is weaker than before but it echoes eightfold. The terror in the hearts of villagers grows stronger. Where are the wolf hunters, when will they be here?"],
+  ["Level 02 Epilogue", "The Non Empty Bottle", "“This was far from anything we expected,” the elder whispered, his voice hollow beneath the bell tower’s silence. The wolf hunter family had brought mercenaries to our aid, and without their skills, not a soul in Lyca would have seen the dawn. Yet what remains of our village is a grievous sight: a few frightened children and a handful of farmers who dared to survive. Finally the rest of the familia five members have arrived. Now all five members of the hunter family are standing here, a reunion that feels like a miracle, though a little too late for us. At least this time the beasts were killed for good. Surely nothing worse can befall us now... can it?"],
+  ["Level 03 Prologue", "Death That Keeps Happening", "This night has run its course, we have won but something is off with the familia five. These are the people who turned back death itself, who made miracles seem ordinary. Tonight, however, they look frightened, as though they know something the village does not.\n\nThen, from the heaps of slain beasts in the square, a sound stirs. A twitch of a paw. A shudder through matted fur. One by one, the bodies begin to move and lift their heads as if death had never touched them. The beasts are alive again. Why do they rise? Have we not lost enough already? Nothing is left standing in Lyca, and still the night finds new ways to take more from us. Why?\n\nThen the doctor’s voice tears through the square. He shouts with fright, “Scatter!! The Alpha is finally here.”"],
+  ["Level 03 Epilogue", "A Secret Withheld", "With the unworldly power of the wolf hunter family, the beasts were cured once and for all. The village lies in ruins, a pile of corpses where homes once stood. Those who survived to see another dawn, those who live to tell this tale yet another day, they owe their lives to these magnificent hunters.\n\nThe grateful villagers gather in the square with their hearts full of thanks. The sky is already paling in the east, and the sun is about to rise. A flutter of wings passes over their heads, birds waking up for the morning air perhaps. The villagers turn as one towards the hunters to express their gratitude, but the square is empty. All five of them are gone, vanished right before their eyes, leaving nothing behind but the cold stones and the crimson stains in the cracks between them. “They are villagers just like us,” villagers once said. But as the first light touches the broken rooftops of Lyca, no one can say how they disappeared, or what they truly were."]
+];
 const GUIDE = [
   ["Basics", [
-    ["Setup", "Four scouts, each forms a scout party along with one villager.\nThe remaining cards are shuffled face down onto the field, in Field Close.\nScout 1 goes first."],
+    ["Setup", "Four scouts, each forms a scout party along with one villager.\nThe remaining cards are shuffled face down onto the field, in Field Close.\nScout 01 goes first."],
+    ["Fields", "Field Open: face up cards. Wolves here attack every turn. Villagers here are attacked first.\nField Close: face down cards. Nobody knows their type.\nField Seen: face down cards with a known type. You can pick them by type.\nField Discard: cards out of the game.\n1|In this level villagers are never added back.\n23|Heal can bring a villager back, face down into Field Seen.\n3|In Level 3 dead werewolves stay here until cured. A blind Alpha can bring them back to the field.\n3|A cured wolf becomes a dead villager here. Heal can bring it back like any villager."],
     ["Turn Steps", "1. Onslaught.\n2. Take your actions in any order.\nSearch is required.\n1|You may take one blue action.\n23|You may take one blue action, and each green action once.\nPray ends the turn.\nThe turn also ends when no other action is left. If you used a blue action before Search, the turn ends when Search is done.\n23|Unless a green action is still possible. Then Pray gets a green ring and is called Meditate.\nThen the next scout plays."],
     ["Win", "1|Level 1: all 4 werewolves are trapped.\n2|Level 2: all 8 werewolves are discarded.\n3|Level 3: no werewolf is left anywhere, not even in the Discard. Wolves that are trapped, hunted or poisoned stay wolves in the Discard until you cure them. Curing the Alpha does not win by itself. A cured wolf in the Discard becomes a dead villager.\nAll scouts win or lose together."],
-    ["Score", "When you win, the score counts every villager card still alive: in a party, in Field Open, Field Close or Field Seen. Dead cards in the Discard do not count. A cured wolf is a villager.\n2|Level 2: subtract 1 for each witch or drunk in the Discard.\nNext level adds this score to the total. The last level shows the final total.\nChoosing a level or New game resets the total."],
+    ["Score", "When you win, the score counts every villager card still alive: in a party, in Field Open, Field Close or Field Seen. Dead cards in the Discard do not count. A cured wolf is a villager.\n2|Level 2: add 1 for each hunter, witch or drunk still alive.\nNext level adds this score to the total. The last level shows the final total.\nChoosing a level or Restart resets the total."],
     ["Lose", "If a scout is attacked when they have no villagers to protect them, the wolf kills the scout.\nIf any scout dies everyone loses the game."]
   ]],
   ["Levels", [
     ["Level 01 Setup", "4 villagers in the party (1 per scout)\n12 villagers and 4 wolves on the field"],
-    ["Level 02 Setup", "4 villagers in the party (1 per scout)\n4 villagers and 8 wolves on the field\nWitch, drunk and 2 hunters are on the field\nWolves do not retaliate. Onslaught still happens."],
-    ["Level 03 Setup", "Witch, drunk and 2 villagers are in the party (1 per scout, at random)\n8 wolves on the field\nDoctor, seer, drunk and 1 hunter on the field\n1 Alpha Werewolf in Field Seen\nThe Alpha needs 8 Blinds and stays face up. Only a seer cures it, and the seer is discarded.\nThe Game Moderator replaces it, face up. Wolves in Open, Close and Seen become villagers. Wolves in the Discard stay wolves.\nWolves retaliate."]
+    ["Level 02 Setup", "4 villagers in the party (1 per scout)\n4 villagers and 8 wolves on the field\nWitch, drunk and 2 hunters are on the field\nWolves do not retaliate. Onslaught still happens.\nThe first deal of Field Close is not fully random. The last card is a wolf.\nMax wolves seen before the first hunter arrives = 3\nMax wolves seen before the witch arrives = 3 + hunters arrived before her\nMax wolves seen before the drunk arrives = 4 + hunters arrived before him\nMax wolves seen before the second hunter arrives = 6\nAfter a drunk shuffle, Field Close is fully random."],
+    ["Level 03 Setup", "Witch, drunk and 2 villagers are in the party (1 per scout, at random)\n8 wolves on the field\nDoctor, seer, drunk and 1 hunter on the field\n1 Alpha Werewolf in Field Seen\nThe Alpha needs 8 Blinds and stays face up. Only a seer cures it, and the seer stays.\nThe Game Moderator replaces it, face up. Wolves in Open, Close and Seen become villagers. Wolves in the Discard stay wolves.\nWolves retaliate."]
   ]],
   ["Turn", [
     ["Onslaught", "At the start of each turn, all face up wolves attack the active scout.\n3|Level 3: a blind Alpha does not attack. After the wolves attack, it brings one werewolf from the Discard back, face up in Field Open. That wolf does not retaliate."],
@@ -1163,12 +1292,6 @@ const GUIDE = [
     ["Search", "Select a face down card, from the field.\nPlace it face up, onto the field.\nPick a random card from Field Close, or a known type from Field Seen. Search is required, unless no card is left to search. Then Search is skipped.\nSearch has a blue ring and a red ring. It does not remove other blue rings.\nWhen Search is done, its red ring moves to Pray and its blue ring moves to Reprise."],
     ["Retaliate", "13|When you flip a wolf face up, it attacks the active scout.\n2|Wolves do not retaliate in this level. A wolf you flip face up does not attack."],
     ["Operate", n => `Take actions in any order.\nBlue actions, one per turn: ${actionNames(BLUE, n)}.${actionNames(TERTIARY, n) && `\nGreen actions, each once per turn: ${actionNames(TERTIARY, n)}.`}`]
-  ]],
-  ["Fields", [
-    ["Field Open", "Face up cards. Wolves here attack every turn. Villagers here are attacked first."],
-    ["Field Close", "Face down cards. Nobody knows their type."],
-    ["Field Seen", "Face down cards with a known type. You can pick them by type."],
-    ["Field Discard", "Cards out of the game.\n1|In this level villagers are never added back.\n23|Heal can bring a villager back, face down into Field Seen.\n3|In Level 3 dead werewolves stay here until cured. A blind Alpha can bring them back to the field.\n3|A cured wolf becomes a dead villager here. Heal can bring it back like any villager."]
   ]],
   ["Actions", [
     ["Rescue", "Select a face up villager, from the field.\nAdd it, to your party.\nNeeds a face up villager."],
@@ -1182,12 +1305,13 @@ const GUIDE = [
     ["Heal", "Remove a villager, from the discard.\nPlace it face down, onto the field.\nA healed character gets their skill back.\nThe card comes back face down, in Field Seen.\n2|Once in a game with a witch.\n3|Once in a game with a witch, every turn with a doctor.\n23|Green action: once per turn."],
     ["Poison", "Select a face up wolf, from the field.\nDiscard it, at the end of the next turn.\nNeeds a witch in hand.\nGreen action: once per turn."],
     ["Cure", `Level 3.\n${CURE}\nNeeds a seer in hand. Use it on dead werewolves in the discard. The cured wolf stays in the discard as a dead villager.\nGreen action: once per turn.`],
-    ["Cure the Alpha Wolf", "Level 3.\nShown alone when the Alpha is blind, a seer is in your party, and your Cure ring is left.\nThe Game Moderator replaces the Alpha. Wolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves.\nThe seer is discarded. It is your Cure action, once per turn. Heal and Poison stay available."]
+    ["Cure the Alpha Wolf", "Level 3.\nShown alone when the Alpha is blind, a seer is in your party, and your Cure ring is left.\nThe Game Moderator replaces the Alpha. Wolves in Field Open, Field Close and Field Seen become villagers. Wolves in the Discard stay wolves.\nThe seer stays in your party. It is your Cure action, once per turn. Heal and Poison stay available."]
   ]],
   ["Characters", [
     ["Characters", "", n => `<div class="gallery">${gallery(n)}</div>`],
     ...CHARACTERS.map(c => [titled(c.name), c.info ?? c.note, `<div class="portrait">${card(c)}</div>`, characterMin(c)])
   ]],
+  ["Story", STORY.map(([label, title, body], i) => [label, body, `<h4>${title}</h4>`, Math.floor(i / 2) + 1])],
   ["Controls", [
     ["Slot Colours", "A blue ring marks a blue action. One blue action removes all blue rings.\n23|Each green action has its own dashed green ring. A green action removes only its own ring.\nSearch has a blue ring and a red ring. Search keeps other blue rings.\nWhen Search is done, its red ring moves to Pray and its blue ring moves to Reprise.\n23|If a blue action came before Search and a green action is still possible, Pray gets a dashed green ring instead.\nReprise is blank before Search. Pray removes all rings.\nA slot with no ring is not possible now.\nA slot marked REDACTED does not exist at this level."],
     ["Choosing", "Click an action to select it. Its targets light up on the board. Click one to run the action.\nPray runs at once. Esc or a click elsewhere clears the selection.\nFor Blind and Trap, if your party has more than one kind of card that can pay, click the party card that pays. A drunk cannot pay for Blind."],
@@ -1201,8 +1325,7 @@ const LINE_TAG = /^([123]+)\|/;
 const forLevel = (text, n) => text.split("\n").filter(line => (line.match(LINE_TAG)?.[1] ?? "123").includes(n)).map(line => line.replace(LINE_TAG, "")).join("\n");
 const resolve = (value, n) => (typeof value === "function" ? value(n) : value);
 const termsFor = n => TERMS.filter(t => t.min <= n).map(t => ({ ...t, text: forLevel(resolve(t.text, n), n), extra: resolve(t.extra, n) })).filter(t => t.text || t.extra);
-const SIDE = ["Fields", "Controls"];
-const NAV = GUIDE.map(([group]) => group).filter(group => !SIDE.includes(group));
+const NAV = GUIDE.map(([group]) => group);
 const guideGroups = $("guideGroups");
 const guideNav = $("guideNav");
 const guideBox = $("guideBox");
@@ -1216,6 +1339,7 @@ const pick = i => {
   term = Math.max(0, Math.min(i, listed.length - 1));
   const { label, text, extra } = listed[term];
   guideBox.innerHTML = `<h3>${label}</h3><div class="body">${extra}${text && `<p>${text}</p>`}</div>`;
+  guideBox.classList.toggle("story", group === "Story");
   guideBox.scrollTop = 0;
   termButtons.forEach((button, n) => button.setAttribute("aria-current", n === term));
   termButtons[term].scrollIntoView({ block: "nearest" });
@@ -1225,10 +1349,6 @@ const showGroup = (name, keep) => {
   listed = shown.filter(t => t.group === name);
   const present = new Set(shown.map(t => t.group));
   guideGroups.innerHTML = NAV.filter(g => present.has(g)).map(g => `<button data-group="${g}" aria-current="${g === name}">${g}</button>`).join("");
-  document.querySelectorAll("#guideTools [data-group]").forEach(button => {
-    button.hidden = !present.has(button.dataset.group);
-    button.setAttribute("aria-current", button.dataset.group === name);
-  });
   guideNav.innerHTML = listed.map((t, i) => `<button data-i="${i}">${t.label}</button>`).join("");
   termButtons = [...guideNav.querySelectorAll("button")];
   pick(Math.max(0, listed.findIndex(t => t.label === keep)));
@@ -1243,10 +1363,13 @@ const toGroup = event => {
   if (button) showGroup(button.dataset.group);
 };
 guideGroups.addEventListener("click", toGroup);
-$("guideTools").addEventListener("click", toGroup);
 guideNav.addEventListener("click", event => {
   const button = event.target.closest("button");
   if (button) pick(+button.dataset.i);
+});
+guideBox.addEventListener("click", event => {
+  const item = event.target.closest("[data-term]");
+  if (item) pick(listed.findIndex(t => t.label === item.dataset.term));
 });
 $("guideLevels").addEventListener("click", event => {
   const button = event.target.closest("button");
@@ -1258,7 +1381,7 @@ modals.forEach(modal => modal.addEventListener("click", event => {
   if (event.target === modal || event.target.closest(".close")) closeModals();
 }));
 document.addEventListener("keydown", event => {
-  if (event.key === "Enter" && event.target.matches(".stack.use")) event.target.click();
+  if (event.key === "Enter" && event.target.matches(".stack.use, [data-term]")) event.target.click();
   const step = { ArrowUp: -1, ArrowDown: 1 }[event.key];
   if (step && !$("guide").hidden) {
     event.preventDefault();
@@ -1270,11 +1393,129 @@ document.addEventListener("keydown", event => {
   closeModals();
   if (idle && (sel || pending)) { unselect(); render(); }
 });
-$("restart").addEventListener("click", () => start(level));
+$("restart").addEventListener("click", () => start(level, campaign ? carry : 0));
 $("again").addEventListener("click", newGame);
-$("next").addEventListener("click", () => (upNext() ? start(upNext(), s.over.sum) : start(1)));
+$("next").addEventListener("click", () => {
+  if (campaign) {
+    epilogue();
+    closeModals();
+  } else if (upNext()) start(upNext(), s.over.sum);
+  else start(1);
+});
+
+const RUN_STORE = "wolfGameCampaign";
+let campaign = false;
+let storyGo;
+const savedRun = () => JSON.parse(localStorage.getItem(RUN_STORE));
+const saveRun = run => (run ? localStorage.setItem(RUN_STORE, JSON.stringify(run)) : localStorage.removeItem(RUN_STORE));
+const setCampaign = on => {
+  campaign = on;
+  document.body.classList.toggle("campaign", on);
+};
+const showPage = id => {
+  ["homePage", "storyPage"].forEach(page => { $(page).hidden = page !== id; });
+  document.body.classList.toggle("paged", !!id);
+  document.body.classList.toggle("onhome", id === "homePage");
+};
+const showHome = () => {
+  $("continueBtn").disabled = !savedRun();
+  showPage("homePage");
+};
+const showStory = (n, part, kicker, button, go) => {
+  const [, title, text] = STORY[(n - 1) * 2 + part];
+  $("storyLevel").textContent = `LEVEL ${two(n)}`;
+  $("storyKind").textContent = kicker;
+  $("storyTitle").textContent = title;
+  $("storyText").textContent = text;
+  $("storyText").scrollTop = 0;
+  $("storyGo").textContent = button;
+  storyGo = go;
+  showPage("storyPage");
+};
+const prologue = (n, kept) => showStory(n, 0, "BEGIN", "Start", () => {
+  saveRun({ level: n, carry: kept });
+  setCampaign(true);
+  start(n, kept);
+  showPage();
+});
+const epilogue = () => {
+  const { sum } = s.over;
+  showStory(level, 1, "EPILOGUE", "Continue", () => {
+    const n = upNext();
+    if (!n) {
+      saveRun(null);
+      showHome();
+      return;
+    }
+    saveRun({ level: n, carry: sum });
+    prologue(n, sum);
+  });
+};
+$("storyGo").addEventListener("click", () => storyGo());
+$("homeBtn").addEventListener("click", () => {
+  setMenu(false);
+  showHome();
+});
+$("newGameBtn").addEventListener("click", () => prologue(1, 0));
+$("continueBtn").addEventListener("click", () => {
+  const run = savedRun();
+  if (!campaign) {
+    setCampaign(true);
+    start(run.level, run.carry);
+  }
+  showPage();
+});
+$("levelsBtn").addEventListener("click", () => {
+  if (campaign) {
+    setCampaign(false);
+    start(level);
+  }
+  showPage();
+});
+const rails = new Map();
+const syncRail = (el, rail) => {
+  const root = el === document.scrollingElement;
+  const range = el.scrollHeight - el.clientHeight;
+  const on = range > 1 && (root ? !document.querySelector(".modal:not([hidden]),.page:not([hidden])") : el.checkVisibility());
+  rail.style.display = on ? "block" : "none";
+  if (!on) return;
+  const box = root ? { top: 0, right: innerWidth, height: innerHeight } : el.getBoundingClientRect();
+  Object.assign(rail.style, { left: `${box.right - 18}px`, top: `${box.top + 6}px`, height: `${box.height - 12}px` });
+  rail.firstChild.style.top = `${(el.scrollTop / range) * 100}%`;
+};
+const syncRails = () => rails.forEach((rail, el) => syncRail(el, rail));
+let railFrame = 0;
+const queueRails = () => {
+  railFrame ||= requestAnimationFrame(() => {
+    railFrame = 0;
+    syncRails();
+  });
+};
+const addRail = el => {
+  const rail = document.body.appendChild(document.createElement("div"));
+  rail.className = "rail";
+  rail.appendChild(document.createElement("i"));
+  const seek = event => {
+    const { top, height } = rail.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientY - top) / height));
+    el.scrollTop = ratio * (el.scrollHeight - el.clientHeight);
+  };
+  rail.addEventListener("pointerdown", event => {
+    rail.setPointerCapture(event.pointerId);
+    seek(event);
+  });
+  rail.addEventListener("pointermove", event => rail.hasPointerCapture(event.pointerId) && seek(event));
+  rails.set(el, rail);
+  new ResizeObserver(queueRails).observe(el);
+  (el === document.scrollingElement ? window : el).addEventListener("scroll", queueRails, { passive: true });
+};
+[document.scrollingElement, ...document.querySelectorAll("#guideNav,#guideBox,#storyText,#log,.modal .panel,.page")].forEach(addRail);
+new MutationObserver(queueRails).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "class"] });
+addEventListener("resize", queueRails);
 
 newGame();
+showHome();
+setInterval(tick, 250);
 </script>
 </body>
 </html>
